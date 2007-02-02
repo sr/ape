@@ -16,7 +16,6 @@ user = cgi['username']
 pass = cgi['password']
 
 ape = Ape.new({ :crumbs => true, :output => 'html' })
-ape.output= 'html'
 
 if user == ''
   ape.check(uri)

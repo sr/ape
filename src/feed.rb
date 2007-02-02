@@ -4,9 +4,9 @@
 require 'rexml/document'
 require 'rexml/xpath'
 
-class Feed
+require 'namespaces'
 
-  @@atomNS = { 'atom' => 'http://www.w3.org/2005/Atom' }
+class Feed
 
   def initialize(input, uri)
     @uri = uri
@@ -24,7 +24,7 @@ class Feed
   end
 
   def entries
-    REXML::XPath.each(@element, '//atom:entry', @@atomNS) do |node|
+    REXML::XPath.each(@element, '//atom:entry', $atomNS) do |node|
       yield Entry.new(node, @uri)
     end
   end

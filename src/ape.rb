@@ -1,5 +1,8 @@
 #   Copyright © 2006 Sun Microsystems, Inc. All rights reserved
 #   Use is subject to license terms - see file "LICENSE"
+require 'rexml/document'
+require 'rubygems'
+require 'builder'
 
 require 'getter'
 require 'service'
@@ -13,9 +16,7 @@ require 'feed'
 require 'html'
 require 'crumbs'
 require 'escaper'
-require 'rexml/document'
-require 'rubygems'
-require 'builder'
+require 'categories'
 
 class Ape
 
@@ -36,9 +37,6 @@ class Ape
     @steps = []
     @header = @footer = nil
     @lnum = 1
-  end
-
-  def output=(type)
   end
 
   # Args: APP URI, username/password, preferred entry/media collections
@@ -175,7 +173,7 @@ class Ape
 
     my_entry = Entry.new(Samples.basic_entry)
 
-    worked = poster.post(@@ATOM_MEDIA_TYPE, Samples.basic_entry)
+    worked = poster.post(@@ATOM_MEDIA_TYPE, my_entry.to_s)
     name = 'Posting new entry'
     @dialogs[name] = poster.crumbs if @dialogs
     if !worked
@@ -301,8 +299,22 @@ class Ape
       good "Entry not found in feed after deletion."
     end
 
+    test_categories entry_coll
+    
     if media_coll
       test_media_posts media_coll.href
+    end
+  end
+
+  def test_categories collection
+    c = Categories.from_collection(collection, self)
+    if c.empty?
+      # post with a random category
+    else
+      # for each <app:categories>
+      c.each do |cats|
+        
+      end
     end
   end
 
@@ -349,8 +361,8 @@ class Ape
       return
     end
     content_src = media_link_entry.content_src
-    if !content_src
-      error "Media link attribute has no content@src pointer to media resource."
+    if (!content_src) || (content_src == "")
+      error "Media link entry has no content@src pointer to media resource."
       return
     end
 
@@ -653,6 +665,7 @@ class Ape
     message.gsub!(/\\"/, '"')
     message = Escaper.escape message
     message.gsub!(/\\n/, '\n<br/>')
+    message.gsub!(/\\t/, '&nbsp;&nbsp;&nbsp;&nbsp;')
     @w.div(:class => tf) { print message }
   end
 

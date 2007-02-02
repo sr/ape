@@ -3,18 +3,16 @@
 
 require 'rexml/xpath'
 require 'atomURI'
+require 'namespaces'
 
 class Collection 
-
-  @@appNS = { 'app' => 'http://purl.org/atom/app#' }
-  @@atomNS = { 'atom' => 'http://www.w3.org/2005/Atom' }
 
   attr_reader :title, :accept, :href
 
   def initialize(input, doc_uri = nil)
     @input = input
     @accept = []
-    @title = REXML::XPath.first(input, './atom:title', @@atomNS)
+    @title = REXML::XPath.first(input, './atom:title', $atomNS)
 
     # sigh, RNC validation *should* take care of this
     unless @title
@@ -30,7 +28,7 @@ class Collection
     end
 
     # now we have to go looking for the accept
-    @accept = REXML::XPath.match(input, './app:accept', @@appNS)
+    @accept = REXML::XPath.match(input, './app:accept', $appNS)
     @accept = @accept.collect { |a| a.texts.join }
 
     if @accept.empty?
@@ -39,11 +37,16 @@ class Collection
   end
 
   def to_s
-    input.to_s
+    @input.to_s
   end
 
   def to_str
     to_s
+  end
+
+  # the name is supposed to suggest multiple instances of "categories"
+  def catses
+    REXML::XPath.match(@input, './app:categories', $appNS)
   end
 
 end

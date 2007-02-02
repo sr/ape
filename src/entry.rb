@@ -3,16 +3,16 @@
 
 require 'rexml/document'
 require 'rexml/xpath'
-require 'atomURI'
 require 'cgi'
+
+require 'atomURI'
+require 'namespaces'
 
 # represents an Atom Entry
 class Entry
 
   # @element is the REXML dom
   # @base is the base URI if known
-  @@atomNamespace = 'http://www.w3.org/2005/Atom'
-  @@atomNS = { 'atom' => @@atomNamespace }
 
   def initialize(node, uri = nil)
     if node.class == String
@@ -32,7 +32,7 @@ class Entry
   end
 
   def content_src
-    content = REXML::XPath.first(@element, './atom:content', @@atomNS)
+    content = REXML::XPath.first(@element, './atom:content', $atomNS)
     if content
       content.attributes['src']
     else
@@ -43,15 +43,28 @@ class Entry
   def get_child(field, namespace = nil)
     if (namespace)
       thisNS = {}
-      thisNS['atom'] = @@atomNamespace
+      thisNS['atom'] = $atomNamespace
       prefix = 'NN'
       thisNS[prefix] = namespace
     else
       prefix = 'atom'
-      thisNS = @@atomNS
+      thisNS = $atomNS
     end
     xpath = "./#{prefix}:#{field}"
     return REXML::XPath.first(@element, xpath, thisNS)
+  end
+
+  def add_category(term, scheme = nil, label = nil)
+    c = REXML::Element.new('atom:category', @element)
+    c.add_namespace('atom', $atomNamespace)
+    c.add_attribute('term', term)
+    c.add_attribute('scheme', scheme) if scheme
+    c.add_attribute('label', label) if label
+    c
+  end
+
+  def delete_category(c)
+    @element.delete_element c
   end
 
   def child_type(field)
@@ -82,7 +95,7 @@ class Entry
   end
 
   def link(rel)
-    a = REXML::XPath.first(@element, "./atom:link[@rel=\"#{rel}\"]", @@atomNS)
+    a = REXML::XPath.first(@element, "./atom:link[@rel=\"#{rel}\"]", $atomNS)
     if a
       l = a.attributes['href']
       l = @base.absolutize(l, @element) if @base
