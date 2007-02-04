@@ -20,6 +20,9 @@ require 'categories'
 
 class Ape
 
+  # TO-DO: Slug
+  
+
   @@ATOM_MEDIA_TYPE = 'application/atom+xml'
 
   def initialize(args)
@@ -103,7 +106,7 @@ class Ape
           image_jpeg_ok = false
           collection.accept.each do |types|
             types.split(/, */).each do |type|
-              # puts "ACCEPT2 [#{type}]"
+
               if type == '*/*' || type == 'image/*' || type == 'image/jpeg'
                 image_jpeg_ok = true
               end
@@ -307,9 +310,11 @@ class Ape
   end
 
   def test_categories collection
+    # WORK IN PROGRESS
     c = Categories.from_collection(collection, self)
+    e = Samples.cat_test_entry
     if c.empty?
-      # post with a random category
+      cat = e.add_category('foo', 'http://tbray.org/cat-test')
     else
       # for each <app:categories>
       c.each do |cats|

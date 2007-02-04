@@ -498,9 +498,18 @@ def Samples.basic_entry
   return e
 end
 
-def Samples.retitled_entry(new_title, new_id)
+def Samples.cat_test_entry
+  e = retitled_entry('Testing category posting')
+end
+
+def Samples.retitled_entry(new_title, new_id = nil)
   e = basic_entry
   e.gsub!(/<title>.*<\/title>/, "<title>#{new_title}</title>")
+  unless new_id
+    new_id = ''
+    (1 .. 5).each { new_id += rand(1000000).to_s }
+    new_id = "tag:tbray.org,2005:#{new_id}"
+  end
   e.gsub(/<id>.*<\/id>/, "<id>#{new_id}</id>")
 end
 
