@@ -200,7 +200,7 @@ class Ape
     if location.index(slug)
       good "Client-provided slug '#{slug}' was used in server-generated URI."
     else
-      warning "Client-provided slug '#{slug}' -not used in server-generated URI."
+      warning "Client-provided slug '#{slug}' not used in server-generated URI."
     end
 
     info "Examining the new entry as returned in the POST response"
