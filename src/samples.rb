@@ -472,14 +472,18 @@ END_OF_ATOM_SCHEMA
 
 end
 
+def Samples.make_id
+  id = ''
+  5.times { id += rand(1000000).to_s }
+  "tag:tbray.org,2005:#{id}"
+end
+
 def Samples.basic_entry
   e = '<entry xmlns="http://www.w3.org/2005/Atom">' + "\n"
   e += ' <title>' + Escaper.escape('From the <APE> (サル)') + "</title>\n"
   e += " <author><name>The Atom Protocol Exerciser</name></author>\n"
   now = DateTime::now
-  id = ''
-  (1 .. 5).each { id += rand(1000000).to_s }
-  e += " <id>tag:tbray.org,2005:#{id}</id>\n"
+  e += " <id>#{make_id}</id>\n"
   updated = now.strftime("%Y-%m-%dT%H:%M:%S%z").sub /(..)$/, ':\1'
   e += " <updated>#{updated}</updated>\n"
   summary = "Summary from the <APE> at #{updated}"
@@ -505,11 +509,7 @@ end
 def Samples.retitled_entry(new_title, new_id = nil)
   e = basic_entry
   e.gsub!(/<title>.*<\/title>/, "<title>#{new_title}</title>")
-  unless new_id
-    new_id = ''
-    (1 .. 5).each { new_id += rand(1000000).to_s }
-    new_id = "tag:tbray.org,2005:#{new_id}"
-  end
+  new_id = make_id unless new_id
   e.gsub(/<id>.*<\/id>/, "<id>#{new_id}</id>")
 end
 

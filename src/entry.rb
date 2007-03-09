@@ -63,6 +63,15 @@ class Entry
     c
   end
 
+  def has_cat(cat)
+    xpath = "./atom:category[@term=\"#{cat.attributes['term']}\""
+    if cat.attributes['scheme']
+      xpath += "and @scheme=\"#{cat.attributes['scheme']}\""
+    end
+    xpath += "]"
+    REXML::XPath.first(@element, xpath, $atomNS)
+  end
+
   def delete_category(c)
     @element.delete_element c
   end
@@ -71,17 +80,17 @@ class Entry
     n = get_child(field, nil)
     (n) ? n.attributes['type'] : nil
   end
-  
+
   def child_content(field, namespace = nil)
     n = get_child(field, namespace)
     (n) ? text_from(n) : nil
   end
-    
+
   def text_from node
     text = ''
     is_html =
-      node.name =~ /(rights|subtitle|summary|title|content)$/ &&
-      node.attributes['type'] == 'html'
+    node.name =~ /(rights|subtitle|summary|title|content)$/ &&
+    node.attributes['type'] == 'html'
     node.find_all do | child |
       if child.kind_of? REXML::Text
         v = child.value
@@ -119,7 +128,7 @@ class Entry
       puts "#{prefix} #{node.getNodeName}"
     end
     Nodes.each_node(node.getChildNodes) {|child| dump(child, depth+1)}
-    
+
   end
-  
+
 end

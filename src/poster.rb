@@ -46,13 +46,13 @@ class Poster
       http.set_debug_output @crumbs if @crumbs
       http.start do |http|
         @response = http.request(req, body)
-        
+
         if @response.code != '201'
           @last_error = @response.message
           return false
         end
 
-        return true unless @response['Content-type'] == 'application/atom+xml'
+        return true unless @response['Content-type'] =~ %r{^application/atom\+xml}
 
         begin
           @entry = Entry.new(@response.body)

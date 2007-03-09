@@ -20,9 +20,6 @@ require 'categories'
 
 class Ape
 
-  # TO-DO: Slug
-  
-
   @@ATOM_MEDIA_TYPE = 'application/atom+xml'
 
   def initialize(args)
@@ -44,7 +41,7 @@ class Ape
 
   # Args: APP URI, username/password, preferred entry/media collections
   def check(uri, username=nil, password=nil,
-            requested_e_coll = nil, requested_m_coll = nil)
+    requested_e_coll = nil, requested_m_coll = nil)
 
     @username = username
     @password = password
@@ -53,7 +50,7 @@ class Ape
       might_fail(uri, requested_e_coll, requested_m_coll)
     rescue Exception
       error "Ouch! Ape fall down go boom; details: " +
-        "#{$!}\n#{$!.class}\n#{$!.backtrace}"
+      "#{$!}\n#{$!.class}\n#{$!.backtrace}"
     end
   end
 
@@ -62,7 +59,7 @@ class Ape
     name = 'Retrieval of Service Document'
     service = check_resource(uri, name, 'application/atomserv+xml')
     return unless service
-    
+
     # * XML-parse the service doc
     text = service.body
     begin
@@ -91,7 +88,7 @@ class Ape
       start_list "Found these collections"
       collections.each do |collection|
         list_item "'#{collection.title}' " +
-          "accepts #{collection.accept.join(', ')}"
+        "accepts #{collection.accept.join(', ')}"
         if (!entry_coll) && collection.accept.index('entry')
           if requested_e_coll
             if requested_e_coll == collection.title
@@ -133,7 +130,7 @@ class Ape
       error "Couldn't find appropriate entry collection."
       return
     end
-      
+
     if media_coll
       good "Will use collection '#{media_coll.title}' for media creation."
     else
@@ -141,8 +138,7 @@ class Ape
     end
 
     # * Retrieve the entries collection, check content-type
-    feed = check_resource(entry_coll.href, 'Retrieval of Entry collection',
-                          @@ATOM_MEDIA_TYPE)
+    feed = check_resource(entry_coll.href, 'Retrieval of Entry collection', @@ATOM_MEDIA_TYPE)
     return unless feed
 
     # * XML-parse the entries feed
@@ -170,35 +166,59 @@ class Ape
     poster = Poster.new(entry_coll.href, @username, @password)
     if poster.last_error
       error("Unacceptable URI for '#{entry_coll.title}' collection: " +
-            poster.last_error)
+      poster.last_error)
       return
     end
 
     my_entry = Entry.new(Samples.basic_entry)
 
+    # ask it to use this in the URI
+    slug = "ape-#{rand(100000)}"
+    poster.set_header('Slug', slug)
+    
+    # add some categories to the entry, and remember which
+    cats = Categories.add_cats(my_entry, entry_coll)
+    
     worked = poster.post(@@ATOM_MEDIA_TYPE, my_entry.to_s)
     name = 'Posting new entry'
-    @dialogs[name] = poster.crumbs if @dialogs
+    save_dialog(name, poster)
     if !worked
       error("Can't POST new entry: #{poster.last_error}", name)
       return
     end
-    
+
     location = poster.header('Location')
     unless location
       error("No Location header upon POST creation", name)
       return
     end
     good("Posting of new entry to the Entries collection " +
-         "reported success, Location: #{location}", name)
+    "reported success, Location: #{location}", name)
+    
+    # * See if the slug was used
+    if location.index(slug)
+      good "Client-provided slug '#{slug}' was used in server-generated URI."
+    else
+      warning "Client-provided slug '#{slug}' -not used in server-generated URI."
+    end
 
     # * Check the entry sent back is more or less the same.
     if poster.entry
       if compare_entries(my_entry, poster.entry,
-                         "posted entry", "returned entry")
+        "posted entry", "returned entry")
         good "Returned entry is consistent with posted entry."
       end
     end
+    
+    # * See if the categories we sent made it in
+    cat_probs = false
+    cats.each do |cat|      
+      if !poster.entry.has_cat(cat)
+        cat_probs = true
+        warning "Provided category not in posted entry: #{cat}"
+      end
+    end
+    good "Provided categories included in newly-created entry." unless cat_probs
 
     # * See if the Location uri can be retrieved, and check its consistency
     name = "Retrieval of newly created entry"
@@ -214,14 +234,14 @@ class Ape
     end
 
     if compare_entries(my_entry, new_entry, "posted entry",
-                       "newly created entry")
+      "newly created entry")
       good "Newly created entry is consistent with posted entry"
     end
     entry_id = new_entry.child_content('id')
 
     # * See if the dc:subject survived
     dc_subject = new_entry.child_content(Samples.foreign_child,
-                                         Samples.foreign_namespace)
+    Samples.foreign_namespace)
     if dc_subject
       if dc_subject == Samples.foreign_child_content
         good "Server preserved foreign markup."
@@ -249,14 +269,14 @@ class Ape
       error "Entry from Location header has no edit link."
       return
     end
-      
+
     # * Update the entry, see if the update took
     name = 'In-place update with put'
     putter = Putter.new(edit_uri, @username, @password)
     new_title = "Let's all do the Ape!"
     new_text = Samples.retitled_entry(new_title, entry_id)
     response = putter.put(@@ATOM_MEDIA_TYPE, new_text)
-    @dialogs[name] = putter.crumbs if @dialogs
+    save_dialog(name, putter)
 
     if response
       good("Update of new entry reported success.", name)
@@ -285,12 +305,12 @@ class Ape
     deleter = Deleter.new(edit_uri, @username, @password)
 
     worked = deleter.delete
-    @dialogs[name] = deleter.crumbs if @dialogs
+    save_dialog(name, deleter)
     if worked
       good("Entry deletion reported success.", name)
     else
       error("Couldn't delete the entry that was posted: " + deleter.last_error,
-            name)
+      name)
       return
     end
 
@@ -302,24 +322,8 @@ class Ape
       good "Entry not found in feed after deletion."
     end
 
-    test_categories entry_coll
-    
     if media_coll
       test_media_posts media_coll.href
-    end
-  end
-
-  def test_categories collection
-    # WORK IN PROGRESS
-    c = Categories.from_collection(collection, self)
-    e = Samples.cat_test_entry
-    if c.empty?
-      cat = e.add_category('foo', 'http://tbray.org/cat-test')
-    else
-      # for each <app:categories>
-      c.each do |cats|
-        
-      end
     end
   end
 
@@ -329,34 +333,34 @@ class Ape
     poster = Poster.new(media_collection, @username, @password)
     if poster.last_error
       error("Unacceptable URI for '#{media_coll.title}' collection: " +
-            poster.last_error)
+      poster.last_error)
       return
     end
 
     name = 'Post image to media collection'
     poster.set_header('Title', 'Picture of the APE')
     worked = poster.post('image/jpeg', Samples.picture)
-    @dialogs[name] = poster.crumbs if @dialogs
+    save_dialog(name, poster)
     if !worked
       error("Can't POST picture to media collection: #{poster.last_error}",
-            name)
+      name)
       return
     end
 
     good("Post of image file reported success, media link location: " +
-         "#{poster.header('Location')}", name)
-    
+    "#{poster.header('Location')}", name)
+
     # * Retrieve the media link entry
     mle_uri = poster.header('Location')
     media_link_entry = check_resource(mle_uri, 'Retrieval of media link entry',
-                                      @@ATOM_MEDIA_TYPE)
+    @@ATOM_MEDIA_TYPE)
     return unless media_link_entry
 
     if media_link_entry.last_error
       error "Can't proceed with media-post testing."
       return
     end
-    
+
     # * See if the <content src= is there and usable
     begin
       media_link_entry = Entry.new(media_link_entry.body, mle_uri)
@@ -393,7 +397,7 @@ class Ape
     name = 'Deletion of media link entry'
     deleter = Deleter.new(edit_uri, @username, @password)
     worked = deleter.delete
-    @dialogs[name] = deleter.crumbs if @dialogs
+    save_dialog(name, deleter)
     if worked
       good("Media link entry deletion reported success.", name)
     else
@@ -409,7 +413,7 @@ class Ape
       good "Media link entry no longer in feed."
     end
   end
-  
+
   #
   # End of tests; support functions from here down
   #
@@ -436,8 +440,13 @@ class Ape
     feed.entries do |from_feed|
       return from_feed if id == from_feed.child_content('id')
     end
-
+    
     return "Couldn't find id #{id} in feed #{feed_uri}"
+  end
+
+  # remember the dialogue that the get/put/post/delete actor recorded
+  def save_dialog(name, actor)
+    @dialogs[name] = actor.crumbs if @dialogs
   end
 
   # Get a resource, optionally check its content-type
@@ -458,11 +467,11 @@ class Ape
       # oops, couldn't even get get it
       error("#{name} failed: " + resource.last_error, name)
       return nil
-      
+
     elsif resource.last_error
       # oops, media-type problem
       warning("#{name}: #{resource.last_error}", name)
-      
+
     else
       # resource fetched and is of right type
       good("#{name}: it exists and is served properly.", name) if report
@@ -530,8 +539,8 @@ class Ape
   end
 
   def line
-    printf "%2d. ", @lnum 
-    @lnum = @lnum + 1  
+    printf "%2d. ", @lnum
+    @lnum += 1
   end
 
   def report
@@ -544,7 +553,7 @@ class Ape
 
   def report_html
     check_mark = Proc.new do
-      @w.span(:class => 'good') { @w.text! '✓' }
+      @w.span(:class => 'good') { STDOUT.print '&#x2713;' }
     end
     question_mark = Proc.new do
       @w.span(:class => 'warning') { @w.text! '?' }
@@ -555,12 +564,12 @@ class Ape
     info_mark = Proc.new do
       @w.img(:align => 'top', :src => '/ape/info.png')
     end
-              
+
     dialog = nil
 
-    puts "Status: 200 OK"
-    puts "Content-type: text/html; charset=utf-8"
-    puts ""
+    puts "Status: 200 OK\r"
+    puts "Content-type: text/html; charset=utf-8\r"
+    puts "\r"
     puts "<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.1//EN' 'http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd'>"
 
     @w = Builder::XmlMarkup.new(:target => STDOUT)
@@ -568,8 +577,8 @@ class Ape
       @w.head do
         @w.title { @w.text! 'Atom Protocol Exerciser Report' }
         @w.text! "\n"
-        @w.link(:rel => 'stylesheet', :type => 'text/css', 
-                :href => '/ape/ape.css' )
+        @w.link(:rel => 'stylesheet', :type => 'text/css',
+        :href => '/ape/ape.css' )
       end
       @w.text! "\n"
       @w.body do
@@ -627,7 +636,7 @@ class Ape
               @w.text! k
             end
             @w.div(:class => 'dialog') do
-              
+
               @w.div(:class => 'dialab') do
                 @w.text! "\nTo server:\n"
                 dialog.grep(/^>/).each { |crumb| show_message(crumb, :to) }
@@ -709,7 +718,7 @@ class Ape
       puts @footer if @footer
     end
   end
-  
+
   def compare_entries(e1, e2, e1Name, e2Name)
     problems = 0
     [ 'title', 'summary', 'content' ].each do |field|
@@ -732,12 +741,12 @@ class Ape
         t2 = e2.child_type(field)
         if t1 != t2
           warning "'#{field}' has type='#{t1}' " +
-            "in #{e1Name}, type='#{t2}' in #{e2Name}"
+          "in #{e1Name}, type='#{t2}' in #{e2Name}"
         else
           c1 = Escaper.escape(c1)
           c2 = Escaper.escape(c2)
           warning "'#{field}' in #{e1Name} [#{c1}] " +
-            "differs from that in #{e2Name} [#{c2}]."
+          "differs from that in #{e2Name} [#{c2}]."
         end
       end
     end
