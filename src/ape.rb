@@ -162,7 +162,7 @@ class Ape
     end
     end_list
 
-    # * Post an entry
+    # Setting up to post a new entry
     poster = Poster.new(entry_coll.href, @username, @password)
     if poster.last_error
       error("Unacceptable URI for '#{entry_coll.title}' collection: " +
@@ -175,10 +175,11 @@ class Ape
     # ask it to use this in the URI
     slug = "ape-#{rand(100000)}"
     poster.set_header('Slug', slug)
-    
+
     # add some categories to the entry, and remember which
-    cats = Categories.add_cats(my_entry, entry_coll)
-    
+    @cats = Categories.add_cats(my_entry, entry_coll)
+
+    # * OK, post it
     worked = poster.post(@@ATOM_MEDIA_TYPE, my_entry.to_s)
     name = 'Posting new entry'
     save_dialog(name, poster)
@@ -194,7 +195,7 @@ class Ape
     end
     good("Posting of new entry to the Entries collection " +
     "reported success, Location: #{location}", name)
-    
+
     # * See if the slug was used
     if location.index(slug)
       good "Client-provided slug '#{slug}' was used in server-generated URI."
@@ -202,28 +203,15 @@ class Ape
       warning "Client-provided slug '#{slug}' -not used in server-generated URI."
     end
 
-    # * Check the entry sent back is more or less the same.
-    if poster.entry
-      if compare_entries(my_entry, poster.entry,
-        "posted entry", "returned entry")
-        good "Returned entry is consistent with posted entry."
-      end
-    end
-    
-    # * See if the categories we sent made it in
-    cat_probs = false
-    cats.each do |cat|      
-      if !poster.entry.has_cat(cat)
-        cat_probs = true
-        warning "Provided category not in posted entry: #{cat}"
-      end
-    end
-    good "Provided categories included in newly-created entry." unless cat_probs
+    info "Examining the new entry as returned in the POST response"
+    check_new_entry(my_entry, poster.entry, "returned entry") if poster.entry
 
     # * See if the Location uri can be retrieved, and check its consistency
     name = "Retrieval of newly created entry"
     new_entry = check_resource(location, name, @@ATOM_MEDIA_TYPE)
     return unless new_entry
+
+    info "Examining the new entry as retrieved using Location header in POST response:"
 
     begin
       new_entry = Entry.new(new_entry.body, location)
@@ -233,24 +221,9 @@ class Ape
       return
     end
 
-    if compare_entries(my_entry, new_entry, "posted entry",
-      "newly created entry")
-      good "Newly created entry is consistent with posted entry"
-    end
-    entry_id = new_entry.child_content('id')
+    check_new_entry(my_entry, new_entry, "retrieved entry")
 
-    # * See if the dc:subject survived
-    dc_subject = new_entry.child_content(Samples.foreign_child,
-    Samples.foreign_namespace)
-    if dc_subject
-      if dc_subject == Samples.foreign_child_content
-        good "Server preserved foreign markup."
-      else
-        warning "Server altered content of foreign markup."
-      end
-    else
-      warning "Server discarded foreign markup."
-    end
+    entry_id = new_entry.child_content('id')
 
     # * fetch the feed again and check that version
     from_feed = find_entry(entry_coll.href, entry_id)
@@ -259,10 +232,10 @@ class Ape
       return
     end
 
+    info "Examining the new entry as it appears in the collection feed:"
+
     # * Check the entry from the feed
-    if compare_entries(my_entry, from_feed, "posted entry", "entry from feed")
-      good "Entry from feed is consistent with posted entry."
-    end
+    check_new_entry(my_entry, from_feed, "entry from collection feed")
 
     edit_uri = new_entry.link('edit')
     if !edit_uri
@@ -414,6 +387,35 @@ class Ape
     end
   end
 
+  def check_new_entry(as_posted, new_entry, desc)
+
+    if compare_entries(as_posted, new_entry, "entry as posted", desc)
+      good "#{desc} is consistent with posted entry."
+    end
+
+    # * See if the categories we sent made it in
+    cat_probs = false
+    @cats.each do |cat|
+      if !new_entry.has_cat(cat)
+        cat_probs = true
+        warning "Provided category not in #{desc}: #{cat}"
+      end
+    end
+    good "Provided categories included in #{desc}." unless cat_probs
+
+    # * See if the dc:subject survived
+    dc_subject = new_entry.child_content(Samples.foreign_child, Samples.foreign_namespace)
+    if dc_subject
+      if dc_subject == Samples.foreign_child_content
+        good "Server preserved foreign markup in #{desc}."
+      else
+        warning "Server altered content of foreign markup in #{desc}."
+      end
+    else
+      warning "Server discarded foreign markup in #{desc}."
+    end
+  end
+
   #
   # End of tests; support functions from here down
   #
@@ -440,7 +442,7 @@ class Ape
     feed.entries do |from_feed|
       return from_feed if id == from_feed.child_content('id')
     end
-    
+
     return "Couldn't find id #{id} in feed #{feed_uri}"
   end
 
@@ -520,6 +522,10 @@ class Ape
       show_crumbs(crumb_key) if crumb_key && @@debugging
     end
     step "G" + message
+  end
+
+  def info(message)
+    step "I" + message
   end
 
   def step(message)
@@ -613,6 +619,7 @@ class Ape
                 when "W" then report_li(dialog, question_mark, body)
                 when "E" then report_li(dialog, excl_mark, body)
                 when "G" then report_li(dialog, check_mark, body)
+                when "I" then report_li(dialog, info_mark, body)
                 else
                   line
                   puts "HUH? #{step}"
@@ -741,7 +748,7 @@ class Ape
         t2 = e2.child_type(field)
         if t1 != t2
           warning "'#{field}' has type='#{t1}' " +
-          "in #{e1Name}, type='#{t2}' in #{e2Name}"
+          "in #{e1Name}, type='#{t2}' in #{e2Name}."
         else
           c1 = Escaper.escape(c1)
           c2 = Escaper.escape(c2)
