@@ -29,7 +29,7 @@ class Collection
 
     # now we have to go looking for the accept
     @accept = REXML::XPath.match(input, './app:accept', $appNS)
-    @accept = @accept.collect { |a| a.texts.join }
+    @accept = @accept.collect{ |a| a.texts.join.split(/,\s*/) }.flatten
 
     if @accept.empty?
       @accept = [ "entry" ]
