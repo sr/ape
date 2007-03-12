@@ -83,14 +83,20 @@ class Entry
 
   def child_content(field, namespace = nil)
     n = get_child(field, namespace)
-    (n) ? text_from(n) : nil
+    return nil unless n
+    
+    # if it's type="xhtml", we'll get the content out of the contained
+    #  XHTML <div> rather than this element
+    if n.attributes['type'] == 'xhtml'
+      n = REXML::XPath.first(n, "./xhtml:div", $xhtmlNS)
+    end 
+  
+    text_from n
   end
 
   def text_from node
     text = ''
-    is_html =
-    node.name =~ /(rights|subtitle|summary|title|content)$/ &&
-    node.attributes['type'] == 'html'
+    is_html = node.name =~ /(rights|subtitle|summary|title|content)$/ && node.attributes['type'] == 'html'
     node.find_all do | child |
       if child.kind_of? REXML::Text
         v = child.value

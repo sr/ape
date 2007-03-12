@@ -57,7 +57,7 @@ class Ape
   def might_fail(uri, requested_e_coll = nil, requested_m_coll = nil)
 
     name = 'Retrieval of Service Document'
-    service = check_resource(uri, name, 'application/atomserv+xml')
+    service = check_resource(uri, name, 'application/atomsvc+xml')
     return unless service
 
     # * XML-parse the service doc
