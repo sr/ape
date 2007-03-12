@@ -210,6 +210,9 @@ class Ape
     name = "Retrieval of newly created entry"
     new_entry = check_resource(location, name, @@ATOM_MEDIA_TYPE)
     return unless new_entry
+    
+    # Grab its etag
+    etag = new_entry.header 'etag'
 
     info "Examining the new entry as retrieved using Location header in POST response:"
 
@@ -246,6 +249,10 @@ class Ape
     # * Update the entry, see if the update took
     name = 'In-place update with put'
     putter = Putter.new(edit_uri, @username, @password)
+    
+    # Conditional PUT if an etag
+    putter.set_header('If-Match', etag) if etag
+    
     new_title = "Let's all do the Ape!"
     new_text = Samples.retitled_entry(new_title, entry_id)
     response = putter.put(@@ATOM_MEDIA_TYPE, new_text)

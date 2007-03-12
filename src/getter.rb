@@ -79,5 +79,9 @@ class Getter
     @body = @response.body
     return true
   end
+  
+  def header(key)
+    @response[key]
+  end
 end
 

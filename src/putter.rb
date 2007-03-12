@@ -8,7 +8,7 @@ require 'crumbs'
 
 class Putter
 
-  attr_reader :last_error, :response, :crumbs
+  attr_reader :last_error, :response, :crumbs, :headers
 
   def initialize(uriString, username='', password='')
     @crumbs = Crumbs.new
@@ -19,7 +19,13 @@ class Putter
     end
     @username = username
     @password = password
+    @headers = {}
   end
+  
+  def set_header(name, val)
+    @headers[name] = val
+  end
+
 
   def put(contentType, body)
     req = Net::HTTP::Put.new(AtomURI.on_the_wire(@uri))
@@ -27,6 +33,8 @@ class Putter
       req.basic_auth @username, @password
     end
     req.set_content_type contentType
+    @headers.each { |k, v| req[k]= v }
+
     begin
       http = Net::HTTP.new(@uri.host, @uri.port)
       http.use_ssl = true if @uri.scheme == 'https'
