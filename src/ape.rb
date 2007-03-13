@@ -1,3 +1,4 @@
+
 #   Copyright © 2006 Sun Microsystems, Inc. All rights reserved
 #   Use is subject to license terms - see file "LICENSE"
 require 'rexml/document'
@@ -17,10 +18,9 @@ require 'html'
 require 'crumbs'
 require 'escaper'
 require 'categories'
+require 'names'
 
 class Ape
-
-  @@ATOM_MEDIA_TYPE = 'application/atom+xml'
 
   def initialize(args)
     @dialogs = (args[:crumbs]) ? {} : []
@@ -57,7 +57,7 @@ class Ape
   def might_fail(uri, requested_e_coll = nil, requested_m_coll = nil)
 
     name = 'Retrieval of Service Document'
-    service = check_resource(uri, name, 'application/atomsvc+xml')
+    service = check_resource(uri, name, Names::AppMediaType)
     return unless service
 
     # * XML-parse the service doc
@@ -138,7 +138,7 @@ class Ape
     end
 
     # * Retrieve the entries collection, check content-type
-    feed = check_resource(entry_coll.href, 'Retrieval of Entry collection', @@ATOM_MEDIA_TYPE)
+    feed = check_resource(entry_coll.href, 'Retrieval of Entry collection', Names::AtomMediaType)
     return unless feed
 
     # * XML-parse the entries feed
@@ -180,7 +180,7 @@ class Ape
     @cats = Categories.add_cats(my_entry, entry_coll)
 
     # * OK, post it
-    worked = poster.post(@@ATOM_MEDIA_TYPE, my_entry.to_s)
+    worked = poster.post(Names::AtomMediaType, my_entry.to_s)
     name = 'Posting new entry'
     save_dialog(name, poster)
     if !worked
@@ -201,7 +201,7 @@ class Ape
 
     # * See if the Location uri can be retrieved, and check its consistency
     name = "Retrieval of newly created entry"
-    new_entry = check_resource(location, name, @@ATOM_MEDIA_TYPE)
+    new_entry = check_resource(location, name, Names::AtomMediaType)
     return unless new_entry
     
     # Grab its etag
@@ -262,7 +262,7 @@ class Ape
     
     new_title = "Let's all do the Ape!"
     new_text = Samples.retitled_entry(new_title, entry_id)
-    response = putter.put(@@ATOM_MEDIA_TYPE, new_text)
+    response = putter.put(Names::AtomMediaType, new_text)
     save_dialog(name, putter)
 
     if response
@@ -339,8 +339,7 @@ class Ape
 
     # * Retrieve the media link entry
     mle_uri = poster.header('Location')
-    media_link_entry = check_resource(mle_uri, 'Retrieval of media link entry',
-    @@ATOM_MEDIA_TYPE)
+    media_link_entry = check_resource(mle_uri, 'Retrieval of media link entry', Names::AtomMediaType)
     return unless media_link_entry
 
     if media_link_entry.last_error
