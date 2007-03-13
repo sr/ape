@@ -196,13 +196,6 @@ class Ape
     good("Posting of new entry to the Entries collection " +
     "reported success, Location: #{location}", name)
 
-    # * See if the slug was used
-    if location.index(slug)
-      good "Client-provided slug '#{slug}' was used in server-generated URI."
-    else
-      warning "Client-provided slug '#{slug}' not used in server-generated URI."
-    end
-
     info "Examining the new entry as returned in the POST response"
     check_new_entry(my_entry, poster.entry, "returned entry") if poster.entry
 
@@ -222,6 +215,20 @@ class Ape
       prob = $!.to_s.gsub(/\n/, '<br/>')
       error "New entry is not well-formed: #{prob}"
       return
+    end
+
+    # * See if the slug was used
+    slug_used = false
+    new_entry.alt_links.each do |a|
+      href = a.attributes['href']
+      if href && href.index(slug)
+        slug_used = true
+      end
+    end
+    if slug_used
+      good "Client-provided slug '#{slug}' was used in server-generated URI."
+    else
+      warning "Client-provided slug '#{slug}' not used in server-generated URI."
     end
 
     check_new_entry(my_entry, new_entry, "retrieved entry")

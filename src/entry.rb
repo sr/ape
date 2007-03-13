@@ -118,6 +118,12 @@ class Entry
       nil
     end
   end
+  
+  def alt_links
+    REXML::XPath.match(@element, "./atom:link", $atomNS).select do |l|
+      l.attributes['rel'] == nil || l.attributes['rel'] == 'alt'
+    end
+  end
 
   def summarize
     child_content('title')
