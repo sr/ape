@@ -4,7 +4,7 @@
 require 'rexml/document'
 require 'rexml/xpath'
 
-require 'namespaces'
+require 'names'
 
 class Categories
 
@@ -64,7 +64,7 @@ def Categories.add_cats(entry, collection)
 
       # if it's fixed, pick the first one
       if cats.attributes['fixed'] == "yes"
-        cat = REXML::XPath.first(cats, './atom:category', $atomNS)
+        cat = REXML::XPath.first(cats, './atom:category', Names::XmlNamespaces)
         scheme = cat.attributes['scheme']
         if !scheme
           scheme = default_scheme

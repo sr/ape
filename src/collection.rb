@@ -3,7 +3,7 @@
 
 require 'rexml/xpath'
 require 'atomURI'
-require 'namespaces'
+require 'names'
 
 class Collection 
 
@@ -12,7 +12,7 @@ class Collection
   def initialize(input, doc_uri = nil)
     @input = input
     @accept = []
-    @title = REXML::XPath.first(input, './atom:title', $atomNS)
+    @title = REXML::XPath.first(input, './atom:title', Names::XmlNamespaces)
 
     # sigh, RNC validation *should* take care of this
     unless @title
@@ -28,7 +28,7 @@ class Collection
     end
 
     # now we have to go looking for the accept
-    @accept = REXML::XPath.match(input, './app:accept', $appNS)
+    @accept = REXML::XPath.match(input, './app:accept', Names::XmlNamespaces)
     @accept = @accept.collect{ |a| a.texts.join.split(/,\s*/) }.flatten
 
     if @accept.empty?
@@ -46,7 +46,7 @@ class Collection
 
   # the name is supposed to suggest multiple instances of "categories"
   def catses
-    REXML::XPath.match(@input, './app:categories', $appNS)
+    REXML::XPath.match(@input, './app:categories', Names::XmlNamespaces)
   end
 
 end

@@ -4,7 +4,7 @@
 require 'rexml/document'
 require 'rexml/xpath'
 
-require 'namespaces'
+require 'names'
 
 class Feed
 
@@ -24,7 +24,7 @@ class Feed
   end
 
   def entries
-    REXML::XPath.each(@element, '//atom:entry', $atomNS) do |node|
+    REXML::XPath.each(@element, '//atom:entry', Names::XmlNamespaces) do |node|
       yield Entry.new(node, @uri)
     end
   end

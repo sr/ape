@@ -6,7 +6,7 @@ require 'rexml/xpath'
 require 'cgi'
 
 require 'atomURI'
-require 'namespaces'
+require 'names'
 
 # represents an Atom Entry
 class Entry
@@ -32,7 +32,7 @@ class Entry
   end
 
   def content_src
-    content = REXML::XPath.first(@element, './atom:content', $atomNS)
+    content = REXML::XPath.first(@element, './atom:content', Names::XmlNamespaces)
     if content
       content.attributes['src']
     else
@@ -43,12 +43,12 @@ class Entry
   def get_child(field, namespace = nil)
     if (namespace)
       thisNS = {}
-      thisNS['atom'] = $atomNamespace
+      thisNS['atom'] = Names::AtomNamespace
       prefix = 'NN'
       thisNS[prefix] = namespace
     else
       prefix = 'atom'
-      thisNS = $atomNS
+      thisNS = Names::XmlNamespaces
     end
     xpath = "./#{prefix}:#{field}"
     return REXML::XPath.first(@element, xpath, thisNS)
@@ -56,7 +56,7 @@ class Entry
 
   def add_category(term, scheme = nil, label = nil)
     c = REXML::Element.new('atom:category', @element)
-    c.add_namespace('atom', $atomNamespace)
+    c.add_namespace('atom', Names::AtomNamespace)
     c.add_attribute('term', term)
     c.add_attribute('scheme', scheme) if scheme
     c.add_attribute('label', label) if label
@@ -69,7 +69,7 @@ class Entry
       xpath += "and @scheme=\"#{cat.attributes['scheme']}\""
     end
     xpath += "]"
-    REXML::XPath.first(@element, xpath, $atomNS)
+    REXML::XPath.first(@element, xpath, Names::XmlNamespaces)
   end
 
   def delete_category(c)
@@ -88,7 +88,7 @@ class Entry
     # if it's type="xhtml", we'll get the content out of the contained
     #  XHTML <div> rather than this element
     if n.attributes['type'] == 'xhtml'
-      n = REXML::XPath.first(n, "./xhtml:div", $xhtmlNS)
+      n = REXML::XPath.first(n, "./xhtml:div", Names::XmlNamespaces)
     end 
   
     text_from n
@@ -110,7 +110,7 @@ class Entry
   end
 
   def link(rel)
-    a = REXML::XPath.first(@element, "./atom:link[@rel=\"#{rel}\"]", $atomNS)
+    a = REXML::XPath.first(@element, "./atom:link[@rel=\"#{rel}\"]", Names::XmlNamespaces)
     if a
       l = a.attributes['href']
       l = @base.absolutize(l, @element) if @base
@@ -120,7 +120,7 @@ class Entry
   end
   
   def alt_links
-    REXML::XPath.match(@element, "./atom:link", $atomNS).select do |l|
+    REXML::XPath.match(@element, "./atom:link", Names::XmlNamespaces).select do |l|
       l.attributes['rel'] == nil || l.attributes['rel'] == 'alt'
     end
   end

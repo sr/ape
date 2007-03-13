@@ -3,12 +3,12 @@
 
 require 'rexml/xpath'
 require 'collection'
-require 'namespaces'
+require 'names'
 
 class Service
 
   def Service.collections(service, uri)
-    nodes = REXML::XPath.match(service, '//app:collection', $appNS)
+    nodes = REXML::XPath.match(service, '//app:collection', Names::XmlNamespaces)
     nodes.collect { |n| Collection.new(n, uri) }
   end
 

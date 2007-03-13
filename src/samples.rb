@@ -6,7 +6,7 @@ require 'rexml/xpath'
 require 'date'
 require 'base64'
 require 'escaper'
-require 'namespaces'
+require 'names'
 
 class Samples
 
@@ -15,7 +15,7 @@ class Samples
     'subject'
   end
   def Samples.foreign_namespace
-    $dcNamespace
+    Names::DcNamespace
   end
   def Samples.foreign_child_content
     'Simians'
@@ -496,8 +496,8 @@ def Samples.basic_entry
     "</div></content>\n"
   #
   # The next line causes broken strings if you parse/unparse it
-  # e += " <dc:subject xmlns:dc='#{$dcNamespace}'>&#xce;&#xf1;&#x167;&#xea;&#x159;&#x144;&#xe5;&#x165;&#x129;&#x14d;&#x1f9;&#x101;&#x13a;&#x129;&#x17e;&#xe4;&#x167;&#x12b;&#x14d;&#xf1;</dc:subject>\n"
-  e += " <dc:subject xmlns:dc='#{$dcNamespace}'>Simians</dc:subject>\n"
+  # e += " <dc:subject xmlns:dc='#{Names::DcNamespace}'>&#xce;&#xf1;&#x167;&#xea;&#x159;&#x144;&#xe5;&#x165;&#x129;&#x14d;&#x1f9;&#x101;&#x13a;&#x129;&#x17e;&#xe4;&#x167;&#x12b;&#x14d;&#xf1;</dc:subject>\n"
+  e += " <dc:subject xmlns:dc='#{Names::DcNamespace}'>Simians</dc:subject>\n"
   e += "</entry>\n"
   return e
 end
