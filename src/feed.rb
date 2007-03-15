@@ -48,7 +48,7 @@ class Feed
       next_link = REXML::XPath.first(feed, "./atom:link[@rel=\"next\"]", Names::XmlNamespaces)
       if next_link
         next_link = next_link.attributes['href']
-        base = AtomURI.new(uri) 
+        base = AtomURI.new(next_page) 
         next_link = base.absolutize(next_link, feed).to_s
         if uris.index(next_link)
           ape.error "Collection contains circular 'next' linkage: #{next_link}" if report
