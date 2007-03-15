@@ -137,26 +137,12 @@ class Ape
       warning "No collection for 'image/jpeg', won't test media posting."
     end
 
-    # * Retrieve the entries collection, check content-type
-    feed = check_resource(entry_coll.href, 'Retrieval of Entry collection', Names::AtomMediaType)
-    return unless feed
-
-    # * XML-parse the entries feed
-    text = feed.body
-    begin
-      feed = Feed.new(text, entry_coll.href)
-    rescue Exception
-      error "Can't parse feed at #{entry_coll.href}, Parser said: #{$!}; Feed text: #{text}"
-      return
-    end
-
-    # * Validate it
-    validate(Samples.atom_RNC, text, 'Entries feed')
+    entries = Feed.read(entry_coll.href, 'Entry collection', self)
 
     # * List the current entries, remember which IDs we've seen
     ids = []
     start_list "Now in the Entries feed"
-    feed.entries do |entry|
+    entries.each do |entry|
       list_item entry.summarize
       ids << entry.child_content('id')
     end
@@ -197,7 +183,7 @@ class Ape
     "reported success, Location: #{location}", name)
 
     info "Examining the new entry as returned in the POST response"
-    check_new_entry(my_entry, poster.entry, "returned entry") if poster.entry
+    check_new_entry(my_entry, poster.entry, "Returned entry") if poster.entry
 
     # * See if the Location uri can be retrieved, and check its consistency
     name = "Retrieval of newly created entry"
@@ -231,12 +217,12 @@ class Ape
       warning "Client-provided slug '#{slug}' not used in server-generated URI."
     end
 
-    check_new_entry(my_entry, new_entry, "retrieved entry")
+    check_new_entry(my_entry, new_entry, "Retrieved entry")
 
     entry_id = new_entry.child_content('id')
 
     # * fetch the feed again and check that version
-    from_feed = find_entry(entry_coll.href, entry_id)
+    from_feed = find_entry(entry_coll.href, "entry collection", entry_id)
     if from_feed.class == String
       error "New entry didn't show up in the collections feed."
       return
@@ -245,9 +231,9 @@ class Ape
     info "Examining the new entry as it appears in the collection feed:"
 
     # * Check the entry from the feed
-    check_new_entry(my_entry, from_feed, "entry from collection feed")
+    check_new_entry(my_entry, from_feed, "Entry from collection feed")
 
-    edit_uri = new_entry.link('edit')
+    edit_uri = new_entry.link('edit', self)
     if !edit_uri
       error "Entry from Location header has no edit link."
       return
@@ -267,7 +253,7 @@ class Ape
 
     if response
       good("Update of new entry reported success.", name)
-      from_feed = find_entry(entry_coll.href, entry_id)
+      from_feed = find_entry(entry_coll.href, "entry collection", entry_id)
       if from_feed.class == String
         error(from_feed, name)
         return
@@ -282,7 +268,7 @@ class Ape
     end
 
     # the edit-uri might have changed
-    edit_uri = from_feed.link('edit')
+    edit_uri = from_feed.link('edit', self)
     if !edit_uri
       error "Entry in feed has no edit link."
       return
@@ -302,7 +288,7 @@ class Ape
     end
 
     # See if it's gone from the feed
-    still_there = find_entry(entry_coll.href, entry_id)
+    still_there = find_entry(entry_coll.href, "entry collection", entry_id)
     if still_there.class != String
       error "Entry is still in collection post-deletion."
     else
@@ -392,7 +378,7 @@ class Ape
     end
 
     # * media link entry still in feed?
-    still_there = find_entry(media_collection, media_link_id)
+    still_there = find_entry(media_collection, "media collection", media_link_id)
     if still_there.class != String
       error "Media link entry is still in collection post-deletion."
     else
@@ -434,25 +420,9 @@ class Ape
   #
 
   # Fetch a feed and look up an entry by ID in it
-  def find_entry(feed_uri, id)
-    feed = Getter.new(feed_uri, @username, @password)
-
-    if feed.last_error
-      return "Unacceptable #{name} URI: " + feed.last_error
-    end
-
-    if !feed.get
-      return "Couldn't get #{name}: " + feed.last_error
-    end
-
-    text = feed.body
-    begin
-      feed = Feed.new(text, feed_uri)
-    rescue ArgumentError
-      return $!
-    end
-
-    feed.entries do |from_feed|
+  def find_entry(feed_uri, name, id)
+    entries = Feed.read(feed_uri, name, self, false)
+    entries.each do |from_feed|
       return from_feed if id == from_feed.child_content('id')
     end
 
@@ -470,7 +440,7 @@ class Ape
 
     # * Check the URI
     if resource.last_error
-      error "Unacceptable #{name} URI: " + resource.last_error
+      error("Unacceptable #{name} URI: " + resource.last_error, name) if report
       return nil
     end
 
@@ -480,12 +450,12 @@ class Ape
 
     if !worked
       # oops, couldn't even get get it
-      error("#{name} failed: " + resource.last_error, name)
+      error("#{name} failed: " + resource.last_error, name) if report
       return nil
 
     elsif resource.last_error
       # oops, media-type problem
-      warning("#{name}: #{resource.last_error}", name)
+      warning("#{name}: #{resource.last_error}", name) if report
 
     else
       # resource fetched and is of right type

@@ -5,29 +5,60 @@ require 'rexml/document'
 require 'rexml/xpath'
 
 require 'names'
+require 'atomURI'
 
 class Feed
 
-  def initialize(input, uri)
-    @uri = uri
-    error = "Feed document not well-formed"
-    begin
-      @element = REXML::Document.new(input, { :raw => nil })
-    rescue Exception
-      error = $!.to_s
-      @element = nil
-    end
-    if !@element
-      raise(ArgumentError, error)
-    end
-    @element = @element.root
-  end
+  # Load up a collection feed from its URI.  Return an array of <entry> objects.
+  #  follow <link rel="next" /> pointers as required to get the whole
+  #  collection
+  def Feed.read(uri, name, ape, report=true)
 
-  def entries
-    REXML::XPath.each(@element, '//atom:entry', Names::XmlNamespaces) do |node|
-      yield Entry.new(node, @uri)
-    end
-  end
+    entries = []
+    uris = []
+    next_page = uri
+    page_num = 1
 
+    while next_page do
+
+      label = "Page #{page_num} of #{name}"
+      uris << next_page
+      page = ape.check_resource(next_page, label, Names::AtomMediaType, report)
+      break unless page
+
+      # * Validate it
+      ape.validate(Samples.atom_RNC, page, label) if report
+
+      # XML-parse the feed
+      error = "not well-formed"
+      begin
+        feed = REXML::Document.new(page.body, { :raw => nil })
+      rescue Exception
+        error = $!.to_s
+        feed = nil
+      end
+      if feed == nil
+        ape.error "Can't parse #{label} at #{next_page}, Parser said: #{$!}; Feed text: #{text}" if report
+        break
+      end
+
+      feed = feed.root
+      page_entries = REXML::XPath.match(feed, "./atom:entry", Names::XmlNamespaces)
+      entries += page_entries.map { |e| Entry.new(e, next_page)}
+      next_link = REXML::XPath.first(feed, "./atom:link[@rel=\"next\"]", Names::XmlNamespaces)
+      if next_link
+        next_link = next_link.attributes['href']
+        base = AtomURI.new(uri) 
+        next_link = base.absolutize(next_link, feed).to_s
+        if uris.index(next_link)
+          ape.error "Collection contains circular 'next' linkage: #{next_link}" if report
+          break
+        end
+        page_num += 1
+      end
+      next_page = next_link
+    end
+    entries
+  end
 end
 

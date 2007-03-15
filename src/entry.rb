@@ -109,14 +109,14 @@ class Entry
     text
   end
 
-  def link(rel)
+  def link(rel, ape=nil)
+    l = nil
     a = REXML::XPath.first(@element, "./atom:link[@rel=\"#{rel}\"]", Names::XmlNamespaces)
     if a
       l = a.attributes['href']
       l = @base.absolutize(l, @element) if @base
-    else
-      nil
     end
+    l
   end
   
   def alt_links
