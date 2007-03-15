@@ -65,11 +65,13 @@ def Categories.add_cats(entry, collection)
       # if it's fixed, pick the first one
       if cats.attributes['fixed'] == "yes"
         cat = REXML::XPath.first(cats, './atom:category', Names::XmlNamespaces)
-        scheme = cat.attributes['scheme']
-        if !scheme
-          scheme = default_scheme
+        if cat
+          scheme = cat.attributes['scheme']
+          if !scheme
+            scheme = default_scheme
+          end
+          added << entry.add_category(cat.attributes['term'], scheme)
         end
-        added << entry.add_category(cat.attributes['term'], scheme)
       else
         add_syntho = true
       end
