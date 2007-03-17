@@ -27,25 +27,37 @@ class Samples
 # RELAX NG Compact Syntax Grammar for the Atom Protocol
 
 namespace app = "http://purl.org/atom/app#"
+namespace atom = "http://www.w3.org/2005/Atom"
+namespace xsd = "http://www.w3.org/2001/XMLSchema"
+namespace xhtml = "http://www.w3.org/1999/xhtml"
 namespace local = ""
 
 start = appService
 
 # common:attrs
 
+atomURI = text
+
 appCommonAttributes =
-   attribute xml:base { atomUri }?,
+   attribute xml:base { atomURI }?,
    attribute xml:lang { atomLanguageTag }?,
    undefinedAttribute*
+
+
+atomCommonAttributes = appCommonAttributes
 
 undefinedAttribute =
   attribute * - (xml:base | xml:lang | local:*) { text }
 
-atomUri = text
+
 
 atomLanguageTag = xsd:string {
    pattern = "[A-Za-z]{1,8}(-[A-Za-z0-9]{1,8})*"
 }
+
+atomDateConstruct =
+    appCommonAttributes,
+    xsd:dateTime
 
 # app:service
 
@@ -61,24 +73,53 @@ appService =
 appWorkspace =
    element app:workspace {
       appCommonAttributes,
-      attribute title { text },
-      ( appCollection+
-        & extensionElement* )
+      ( atomTitle
+        & appCollection*
+        & extensionSansTitleElement* )
    }
+
+atomTitle = element atom:title { atomTextConstruct }
 
 # app:collection
 
 appCollection =
    element app:collection {
       appCommonAttributes,
-      attribute title { text },
-      attribute href { atomUri  },
-      ( appAccept?
-        & extensionElement* )
+      attribute href { atomURI  },
+      ( atomTitle
+        & appAccept?
+        & appCategories*
+        & extensionSansTitleElement* )
    }
 
+# app:categories
 
-# app:member
+atomCategory =
+    element atom:category {
+       atomCommonAttributes,
+       attribute term { text },
+       attribute scheme { atomURI }?,
+       attribute label { text }?,
+       undefinedContent
+    }
+
+appInlineCategories =
+    element app:categories {
+        attribute fixed { "yes" | "no" }?,
+        attribute scheme { atomURI }?,
+        (atomCategory*)
+    }
+
+appOutOfLineCategories =
+    element app:categories {
+        attribute href { atomURI },
+        undefinedContent
+    }
+
+appCategories = appInlineCategories | appOutOfLineCategories
+
+
+# app:accept
 
 appAccept =
    element app:accept {
@@ -86,22 +127,38 @@ appAccept =
          ( appTypeValue? )
    }
 
+
 appTypeValue = ( "entry" | media-type |entry-or-media-type  )
 media-type = xsd:string { pattern = "entry,(.+/.+,?)*" }
 entry-or-media-type = xsd:string { pattern = "(.+/.+,?)*" }
 # above is an approximation, rnc doesn't support interleaved text
 
+
 # Simple Extension
 
-simpleExtensionElement =
-   element * - app:* {
+simpleSansTitleExtensionElement =
+   element * - (app:*|atom:title) {
       text
    }
 
+simpleExtensionElement =
+   element * - (app:*) {
+      text
+   }
+
+
 # Structured Extension
 
+structuredSansTitleExtensionElement =
+   element * - (app:*|atom:title) {
+      (attribute * { text }+,
+         (text|anyElement)*)
+    | (attribute * { text }*,
+       (text?, anyElement+, (text|anyElement)*))
+   }
+
 structuredExtensionElement =
-   element * - app:* {
+   element * - (app:*) {
       (attribute * { text }+,
          (text|anyElement)*)
     | (attribute * { text }*,
@@ -110,10 +167,14 @@ structuredExtensionElement =
 
 # Other Extensibility
 
+extensionSansTitleElement =
+ simpleSansTitleExtensionElement|structuredSansTitleExtensionElement
+
+
 extensionElement =
    simpleExtensionElement | structuredExtensionElement
 
-
+undefinedContent = (text|anyForeignElement)*
 
 # Extensions
 
@@ -124,9 +185,114 @@ anyElement =
        | anyElement)*
    }
 
+anyForeignElement =
+    element * - app:* {
+       (attribute * { text }
+        | text
+        | anyElement)*
+    }
+
+atomPlainTextConstruct =
+    atomCommonAttributes,
+    attribute type { "text" | "html" }?,
+    text
+
+atomXHTMLTextConstruct =
+    atomCommonAttributes,
+    attribute type { "xhtml" },
+    xhtmlDiv
+
+atomTextConstruct = atomPlainTextConstruct | atomXHTMLTextConstruct
+
+anyXHTML = element xhtml:* {
+    (attribute * { text }
+     | text
+     | anyXHTML)*
+}
+
+xhtmlDiv = element xhtml:div {
+  (attribute * { text }
+   | text
+   | anyXHTML)*
+}
+
 # EOF
 END_OF_SERVICE_SCHEMA
   end
+  
+def Samples.categories_RNC
+  return <<END_OF_CATEGORIES_SCHEMA
+# -*- rnc -*-
+# RELAX NG Compact Syntax Grammar for the Atom Protocol
+
+namespace app = "http://purl.org/atom/app#"
+namespace atom = "http://www.w3.org/2005/Atom"
+namespace xsd = "http://www.w3.org/2001/XMLSchema"
+namespace local = ""
+
+start = appCategories
+
+atomCommonAttributes =
+   attribute xml:base { atomURI }?,
+   attribute xml:lang { atomLanguageTag }?,
+   undefinedAttribute*
+
+undefinedAttribute =
+  attribute * - (xml:base | xml:lang | local:*) { text }
+
+atomURI = text
+
+atomLanguageTag = xsd:string {
+   pattern = "[A-Za-z]{1,8}(-[A-Za-z0-9]{1,8})*"
+}
+
+
+atomCategory =
+    element atom:category {
+       atomCommonAttributes,
+       attribute term { text },
+       attribute scheme { atomURI }?,
+       attribute label { text }?,
+       undefinedContent
+    }
+
+appInlineCategories =
+    element app:categories {
+        attribute fixed { "yes" | "no" }?,
+        attribute scheme { atomURI }?,
+        (atomCategory*)
+    }
+
+appOutOfLineCategories =
+    element app:categories {
+        attribute href { atomURI },
+        (empty)
+    }
+
+appCategories = appInlineCategories | appOutOfLineCategories
+
+
+# Extensibility
+
+undefinedContent = (text|anyForeignElement)*
+
+anyElement =
+   element * {
+      (attribute * { text }
+       | text
+       | anyElement)*
+   }
+
+anyForeignElement =
+    element * - atom:* {
+       (attribute * { text }
+        | text
+        | anyElement)*
+    }
+
+# EOF
+END_OF_CATEGORIES_SCHEMA
+end
 
 def Samples.atom_RNC
   return <<END_OF_ATOM_SCHEMA

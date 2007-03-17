@@ -12,7 +12,7 @@ class Categories
 
   def Categories.from_collection(collection, ape)
 
-    # "catses" because if cats is short for categories, then catses suggests
+    # "catses" because if cats is short for categories, then catses 
     #  suggests multiple <app:categories> elements
     catses = collection.catses
 

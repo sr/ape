@@ -19,6 +19,7 @@ require 'crumbs'
 require 'escaper'
 require 'categories'
 require 'names'
+require 'validator'
 
 class Ape
 
@@ -71,7 +72,7 @@ class Ape
     end
 
     # RNC-validate the service doc
-    validate(Samples.service_RNC, text, 'Service doc')
+    Validator.validate(Samples.service_RNC, text, 'Service doc', self)
 
     # * Do we have collections we can post an entry and a picture to?
     #   the requested_* arguments are the requested collection titles; if
@@ -465,10 +466,6 @@ class Ape
     return resource
   end
 
-  def validate(schema, text, name)
-    # Can do this in JRuby, not native Ruby (sigh)
-  end
-
   def header(uri)
     @header = "APP Service doc: #{uri}"
   end
@@ -649,7 +646,14 @@ class Ape
           marker.call
           @w.text! ' '
         end
-        @w.text! text
+        # preserve line-breaks in output
+        lines = text.split("\n")
+        lines[0 .. -2].each do |line|
+          @w.text! line
+          @w.target! << '<br/>'
+        end
+        @w.text! lines[-1]
+        #  @w.text! text
         if dialog
           @w.a(:class => 'diaref', :href => "#dia-#{@dianum}") do
             @w.text! ' [Dialog]'

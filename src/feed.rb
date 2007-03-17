@@ -6,6 +6,7 @@ require 'rexml/xpath'
 
 require 'names'
 require 'atomURI'
+require 'validator'
 
 class Feed
 
@@ -27,7 +28,7 @@ class Feed
       break unless page
 
       # * Validate it
-      ape.validate(Samples.atom_RNC, page, label) if report
+      Validator.validate(Samples.atom_RNC, page.body, label, ape) if report
 
       # XML-parse the feed
       error = "not well-formed"
