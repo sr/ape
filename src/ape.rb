@@ -650,10 +650,10 @@ class Ape
         lines = text.split("\n")
         lines[0 .. -2].each do |line|
           @w.text! line
-          @w.target! << '<br/>'
+          @w.target! << '<br />'
         end
         @w.text! lines[-1]
-        #  @w.text! text
+
         if dialog
           @w.a(:class => 'diaref', :href => "#dia-#{@dianum}") do
             @w.text! ' [Dialog]'
