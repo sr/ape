@@ -34,20 +34,25 @@ class Validator
     error = nil
     driver = ValidationDriver.new(properties.toPropertyMap, CompactSchemaReader.getInstance)
     if driver.loadSchema(InputSource.new(StringReader.new(schema)))
-      if !driver.validate(InputSource.new(StringReader.new(text)))
-        error = schemaError
+      begin
+        if !driver.validate(InputSource.new(StringReader.new(text)))
+          error = schemaError.toString
+        end
+      rescue org.xml.sax.SAXParseException
+        error = $!.to_s.sub(/\n.*$/, '')
       end
     else
-      error = schemaError
+      error = schemaError.toString
     end
 
     if !error
       ape.good "#{name} passed schema validation."
+      true
     else
       # this kind of sucks, but I spent a looong time lost in a maze of twisty
-      #  little passages without being able to figure out how to 
+      #  little passages without being able to figure out how to
       #  tell jing what name I'd like to call the InputSource
-      ape.error "#{name} failed schema validation:\n" + error.toString.gsub('(unknown file):', 'Line ')
+      ape.error "#{name} failed schema validation:\n" + error.gsub('(unknown file):', 'Line ')
       false
     end
 
