@@ -3,9 +3,9 @@
 
 class HTML
 
-  def HTML.error(message)
-    headers
-    puts <<EndOfText
+  def HTML.error(message, output=STDOUT)
+    headers(output)
+    output.puts <<EndOfText
 <title>Error: #{message}</title>
 </head>
 <body>
@@ -14,20 +14,21 @@ class HTML
 EndOfText
   end
 
-  def HTML.headers
-    puts "Status: 200 OK"
-    puts "Content-type: text/html; charset=utf-8"
-    puts ""
-    puts "<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.1//EN' 'http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd'>"
-    puts "<html>\n<head>\n"
-    puts "<link rel='stylesheet' type='text/css' href='/ape/ape.css' />"
+  def HTML.headers(output)
+    output.puts "Status: 200 OK\r"
+    output.puts "Content-type: text/html; charset=utf-8\r"
+    output.puts "
+"
+    output.puts "<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.1//EN' 'http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd'>"
+    output.puts "<html>\n<head>\n"
+    output.puts "<link rel='stylesheet' type='text/css' href='/ape/ape.css' />"
   end
 
-  def HTML.page title
-    headers
-    puts "<title>#{title}</title>"
-    puts "</head>\n<body>"
+  def HTML.page(title, output=STDOUT)
+    headers(output)
+    output.puts "<title>#{title}</title>"
+    output.puts "</head>\n<body>"
     yield
-    puts "</body>\n</html>"
+    output.puts "</body>\n</html>"
   end
 end

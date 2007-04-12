@@ -1,4 +1,3 @@
-
 #   Copyright © 2006 Sun Microsystems, Inc. All rights reserved
 #   Use is subject to license terms - see file "LICENSE"
 require 'rexml/document'
@@ -160,7 +159,9 @@ class Ape
     my_entry = Entry.new(Samples.basic_entry)
 
     # ask it to use this in the URI
-    slug = "ape-#{rand(100000)}"
+    slug_num = rand(100000)
+    slug = "ape-#{slug_num}"
+    slug_re = %r{ape.?#{slug_num}}
     poster.set_header('Slug', slug)
 
     # add some categories to the entry, and remember which
@@ -208,7 +209,7 @@ class Ape
     slug_used = false
     new_entry.alt_links.each do |a|
       href = a.attributes['href']
-      if href && href.index(slug)
+      if href && href.index(slug_re)
         slug_used = true
       end
     end
@@ -529,42 +530,32 @@ class Ape
     @lnum += 1
   end
 
-  def report
+  def report(output=STDOUT)
     if @output == 'text'
-      report_text
+      report_text output
     else
-      report_html
+      report_html output
     end
   end
 
-  def report_html
-    check_mark = Proc.new do
-      @w.span(:class => 'good') { STDOUT.print '&#x2713;' }
-    end
-    question_mark = Proc.new do
-      @w.span(:class => 'warning') { @w.text! '?' }
-    end
-    excl_mark = Proc.new do
-      @w.span(:class => 'error') { @w.text! '!' }
-    end
-    info_mark = Proc.new do
-      @w.img(:align => 'top', :src => '/ape/info.png')
-    end
+  
 
+  def report_html(output=STDOUT)
     dialog = nil
 
-    puts "Status: 200 OK\r"
-    puts "Content-type: text/html; charset=utf-8\r"
-    puts "\r"
-    puts "<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.1//EN' 'http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd'>"
+    if output == STDOUT
+      output.puts "Status: 200 OK\r"
+      output.puts "Content-type: text/html; charset=utf-8\r"
+      output.puts "\r"
+      output.puts "<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.1//EN' 'http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd'>"
+    end
 
-    @w = Builder::XmlMarkup.new(:target => STDOUT)
+    @w = Builder::XmlMarkup.new(:target => output)
     @w.html do
       @w.head do
         @w.title { @w.text! 'Atom Protocol Exerciser Report' }
         @w.text! "\n"
-        @w.link(:rel => 'stylesheet', :type => 'text/css',
-        :href => '/ape/ape.css' )
+        @w.link(:rel => 'stylesheet', :type => 'text/css',:href => '/ape/ape.css' )
       end
       @w.text! "\n"
       @w.body do
@@ -581,7 +572,7 @@ class Ape
               # it's a list; no dialog applies
               @w.li do
                 @w.p do
-                  info_mark.call
+                  write_mark :info
                   @w.text! " #{step[0]}\n"
                 end
                 @w.ul do
@@ -596,10 +587,10 @@ class Ape
                 dialog = body
               else
                 case opcode
-                when "W" then report_li(dialog, question_mark, body)
-                when "E" then report_li(dialog, excl_mark, body)
-                when "G" then report_li(dialog, check_mark, body)
-                when "I" then report_li(dialog, info_mark, body)
+                when "W" then report_li(dialog, :question, body)
+                when "E" then report_li(dialog, :exclamation, body)
+                when "G" then report_li(dialog, :check, body)
+                when "I" then report_li(dialog, :info, body)
                 else
                   line
                   puts "HUH? #{step}"
@@ -643,14 +634,14 @@ class Ape
     @w.li do
       @w.p do
         if marker
-          marker.call
+          write_mark marker
           @w.text! ' '
         end
         # preserve line-breaks in output
         lines = text.split("\n")
         lines[0 .. -2].each do |line|
           @w.text! line
-          @w.target! << '<br />'
+          @w.br
         end
         @w.text! lines[-1]
 
@@ -672,9 +663,9 @@ class Ape
     message.gsub!(/"\s*$/, '')
     message.gsub!(/\\"/, '"')
     message = Escaper.escape message
-    message.gsub!(/\\n/, '\n<br/>')
+    message.gsub!(/\\n/, "\n<br/>")
     message.gsub!(/\\t/, '&nbsp;&nbsp;&nbsp;&nbsp;')
-    @w.div(:class => tf) { print message }
+    @w.div(:class => tf) { @w.target! << message }
   end
 
   def report_text
@@ -746,6 +737,19 @@ class Ape
     end
     return problem
   end
+
+  def write_mark(mark)
+    case mark
+    when :check
+      @w.span(:class => 'good') { @w.target << '&#x2713;' }
+    when :question
+      @w.span(:class => 'warning') { @w.text! '?' }
+    when :exclamation
+      @w.span(:class => 'error') { @w.text! '!' }
+    when :info
+      @w.img(:align => 'top', :src => '/ape/info.png')
+    end
+  end 
 
 end
 

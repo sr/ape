@@ -31,4 +31,8 @@ class Crumbs
   def each
     @crumbs.each { |c| yield c }
   end
+
+  def to_s
+    "  " + @crumbs.join("...\n")
+  end
 end

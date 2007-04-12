@@ -59,6 +59,12 @@ class Feed
       end
       next_page = next_link
     end
+    
+    # Ensure that entreis are ordered by app:edited
+    if report
+      
+    end
+    
     entries
   end
 end
