@@ -43,7 +43,6 @@ class Entry
   def get_child(field, namespace = nil)
     if (namespace)
       thisNS = {}
-      thisNS['atom'] = Names::AtomNamespace
       prefix = 'NN'
       thisNS[prefix] = namespace
     else

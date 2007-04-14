@@ -49,7 +49,7 @@ class Feed
       next_link = REXML::XPath.first(feed, "./atom:link[@rel=\"next\"]", Names::XmlNamespaces)
       if next_link
         next_link = next_link.attributes['href']
-        base = AtomURI.new(next_page) 
+        base = AtomURI.new(next_page)
         next_link = base.absolutize(next_link, feed).to_s
         if uris.index(next_link)
           ape.error "Collection contains circular 'next' linkage: #{next_link}" if report
@@ -59,13 +59,51 @@ class Feed
       end
       next_page = next_link
     end
-    
-    # Ensure that entreis are ordered by app:edited
-    if report
-      
+
+    # all done unless we're error-checking
+    return entries unless report
+
+    # Ensure that entries are ordered by app:edited
+    last_date = nil
+    with_app_date = 0
+    clean = true
+    entries.each do |e|
+      datestr = e.child_content("edited", Names::AppNamespace)
+      error = nil
+      if datestr
+        if datestr =~ /\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d+)?(Z|([-+]\d\d:\d\d))/
+          begin
+            date = Time.parse(datestr)
+            with_app_date += 1
+            if last_date && (date > last_date)
+              error = "app:date values out of order"
+            end
+            last_date = date
+          rescue ArgumentError
+            error = "invalid app:edited value: #{datestr}"
+          end
+        else
+          error = "invalid app:edited child: #{datestr}"
+        end
+        if error
+          title = e.child_content "title"
+          ape.error "In entry with title '#{title}', #{error}."
+          clean = false
+        end
+      end
     end
-    
+    if with_app_date < entries.size
+      ape.error "#{entries.size - with_app_date} of #{entries.size} entries lack app:date values."
+      clean = false
+    end
+
+    if clean
+      ape.good "#{label} has correct app:edited value order."
+    end
+
     entries
+
   end
+
 end
 
