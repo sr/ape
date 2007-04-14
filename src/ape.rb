@@ -191,7 +191,7 @@ class Ape
     name = "Retrieval of newly created entry"
     new_entry = check_resource(location, name, Names::AtomMediaType)
     return unless new_entry
-    
+
     # Grab its etag
     etag = new_entry.header 'etag'
 
@@ -244,10 +244,10 @@ class Ape
     # * Update the entry, see if the update took
     name = 'In-place update with put'
     putter = Putter.new(edit_uri, @username, @password)
-    
+
     # Conditional PUT if an etag
     putter.set_header('If-Match', etag) if etag
-    
+
     new_title = "Let's all do the Ape!"
     new_text = Samples.retitled_entry(new_title, entry_id)
     response = putter.put(Names::AtomMediaType, new_text)
@@ -313,7 +313,14 @@ class Ape
     end
 
     name = 'Post image to media collection'
-    poster.set_header('Title', 'Picture of the APE')
+
+    # ask it to use this in the URI
+    slug_num = rand(100000)
+    slug = "apix-#{slug_num}"
+    slug_re = %r{apix.?#{slug_num}}
+    poster.set_header('Slug', slug)
+
+    poster.set_header('Slug', slug)
     worked = poster.post('image/jpeg', Samples.picture)
     save_dialog(name, poster)
     if !worked
@@ -347,6 +354,14 @@ class Ape
     if (!content_src) || (content_src == "")
       error "Media link entry has no content@src pointer to media resource."
       return
+    end
+
+    # see if slug was used in media URI
+    if content_src =~ slug_re
+      good "Client-provided slug '#{slug}' was used in Media Resource URI."
+    else
+      warning "Client-provided slug '#{slug}' not used in Media Resource URI."
+
     end
 
     media_link_id = media_link_entry.child_content('id')
@@ -457,7 +472,7 @@ class Ape
 
     elsif resource.last_error
       # oops, media-type problem
-      warning("#{name}: #{resource.last_error}", name) if report
+      error("#{name}: #{resource.last_error}", name) if report
 
     else
       # resource fetched and is of right type
@@ -538,7 +553,7 @@ class Ape
     end
   end
 
-  
+
 
   def report_html(output=STDOUT)
     dialog = nil
@@ -749,7 +764,7 @@ class Ape
     when :info
       @w.img(:align => 'top', :src => '/ape/info.png')
     end
-  end 
+  end
 
 end
 

@@ -93,7 +93,7 @@ class Feed
       end
     end
     if with_app_date < entries.size
-      ape.error "#{entries.size - with_app_date} of #{entries.size} entries lack app:date values."
+      ape.error "#{entries.size - with_app_date} of #{entries.size} entries in #{label} lack app:date elements."
       clean = false
     end
 
