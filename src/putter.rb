@@ -42,7 +42,7 @@ class Putter
       http.start do |http|
         @response = http.request(req, body)
         
-        if @response.code != '200'
+        unless @response.kind_of? Net::HTTPSuccess
           @last_error = @response.message
           return false
         end

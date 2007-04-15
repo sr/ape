@@ -32,7 +32,7 @@ class Deleter
       http.start do |http|
         @response = http.request(req)
         
-        return true if @response.code == '200'
+        return true if @response.kind_of? Net::HTTPSuccess
 
         @last_error = @response.message
         return false
