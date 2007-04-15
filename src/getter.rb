@@ -47,7 +47,7 @@ class Getter
           return getBody(contentType)
           
         when Net::HTTPRedirection
-          redirect_to = "#{@uri.scheme}://#{@uri.host}#{@response['location']}"
+          redirect_to = @uri.merge(@response['location'])
           @uri = AtomURI.check(redirect_to)
           return get(contentType, depth + 1)
           

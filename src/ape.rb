@@ -361,7 +361,6 @@ class Ape
       good "Client-provided slug '#{slug}' was used in Media Resource URI."
     else
       warning "Client-provided slug '#{slug}' not used in Media Resource URI."
-
     end
 
     media_link_id = media_link_entry.child_content('id')
