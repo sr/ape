@@ -10,20 +10,19 @@ class Deleter
 
   attr_reader :last_error, :crumbs
 
-  def initialize(uriString, username='', password='')
+  def initialize(uriString, authent)
     @last_error = nil
     @crumbs = Crumbs.new
     @uri = AtomURI.check(uriString)
     if (@uri.class == String)
       @last_error = @uri
     end
-    @username = username
-    @password = password
+    @authent = authent
   end
 
   def delete
     req = Net::HTTP::Delete.new(AtomURI.on_the_wire(@uri))
-    req.basic_auth(@username, @password) if @username
+    @authent.add_to req
 
     begin
       http = Net::HTTP.new(@uri.host, @uri.port)

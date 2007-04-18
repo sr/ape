@@ -11,15 +11,14 @@ class Getter
 
   attr_reader :last_error, :contentType, :charset, :body, :crumbs, :response
 
-  def initialize(uri, username = nil, password = nil)
+  def initialize(uri, authent)
     @last_error = nil
     @crumbs = Crumbs.new
     @uri = AtomURI.check(uri)
     if (@uri.class == String)
       @last_error = @uri
     end
-    @username = username
-    @password = password
+    @authent = authent
   end
 
   def get(contentType = nil, depth = 0)
@@ -34,12 +33,11 @@ class Getter
 
     begin
       http = Net::HTTP.new(@uri.host, @uri.port)
+  
       http.use_ssl = true if @uri.scheme == 'https'
       http.set_debug_output @crumbs if @crumbs
       http.start do |http|
-        if @username && @password
-          req.basic_auth @username, @password
-        end
+        @authent.add_to req
         @response = http.request(req)
         
         case @response

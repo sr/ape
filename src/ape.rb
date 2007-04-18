@@ -1,5 +1,6 @@
 #   Copyright © 2006 Sun Microsystems, Inc. All rights reserved
 #   Use is subject to license terms - see file "LICENSE"
+
 require 'rexml/document'
 require 'rubygems'
 require 'builder'
@@ -19,6 +20,7 @@ require 'escaper'
 require 'categories'
 require 'names'
 require 'validator'
+require 'authent'
 
 class Ape
 
@@ -43,8 +45,7 @@ class Ape
   def check(uri, username=nil, password=nil,
     requested_e_coll = nil, requested_m_coll = nil)
 
-    @username = username
-    @password = password
+    @authent = Authent.new(username, password)
     header(uri)
     begin
       might_fail(uri, requested_e_coll, requested_m_coll)
@@ -126,18 +127,23 @@ class Ape
 
     if entry_coll
       good "Will use collection '#{entry_coll.title}' for entry creation."
+      test_entry_posts entry_coll
     else
-      error "Couldn't find appropriate entry collection."
-      return
+      warning "No collection for 'entry', won't test entry posting."
     end
 
     if media_coll
       good "Will use collection '#{media_coll.title}' for media creation."
+      test_media_posts media_coll.href
     else
       warning "No collection for 'image/jpeg', won't test media posting."
     end
+  end
 
-    entries = Feed.read(entry_coll.href, 'Entry collection', self)
+  def test_entry_posts(entry_collection)
+    
+    collection_uri = entry_collection.href
+    entries = Feed.read(collection_uri, 'Entry collection', self)
 
     # * List the current entries, remember which IDs we've seen
     ids = []
@@ -149,9 +155,9 @@ class Ape
     end_list
 
     # Setting up to post a new entry
-    poster = Poster.new(entry_coll.href, @username, @password)
+    poster = Poster.new(collection_uri, @authent)
     if poster.last_error
-      error("Unacceptable URI for '#{entry_coll.title}' collection: " +
+      error("Unacceptable URI for '#{entry_collection.title}' collection: " +
       poster.last_error)
       return
     end
@@ -165,7 +171,7 @@ class Ape
     poster.set_header('Slug', slug)
 
     # add some categories to the entry, and remember which
-    @cats = Categories.add_cats(my_entry, entry_coll)
+    @cats = Categories.add_cats(my_entry, entry_collection)
 
     # * OK, post it
     worked = poster.post(Names::AtomMediaType, my_entry.to_s)
@@ -224,8 +230,10 @@ class Ape
     entry_id = new_entry.child_content('id')
 
     # * fetch the feed again and check that version
-    from_feed = find_entry(entry_coll.href, "entry collection", entry_id)
+    from_feed = find_entry(collection_uri, "entry collection", entry_id)
     if from_feed.class == String
+      good "About to check #{collection_uri}"
+      Feed.read(collection_uri, "Can't find entry in collection", self)
       error "New entry didn't show up in the collections feed."
       return
     end
@@ -243,7 +251,7 @@ class Ape
 
     # * Update the entry, see if the update took
     name = 'In-place update with put'
-    putter = Putter.new(edit_uri, @username, @password)
+    putter = Putter.new(edit_uri, @authent)
 
     # Conditional PUT if an etag
     putter.set_header('If-Match', etag) if etag
@@ -255,7 +263,7 @@ class Ape
 
     if response
       good("Update of new entry reported success.", name)
-      from_feed = find_entry(entry_coll.href, "entry collection", entry_id)
+      from_feed = find_entry(collection_uri, "entry collection", entry_id)
       if from_feed.class == String
         error(from_feed, name)
         return
@@ -277,7 +285,7 @@ class Ape
     end
 
     name = 'New Entry deletion'
-    deleter = Deleter.new(edit_uri, @username, @password)
+    deleter = Deleter.new(edit_uri, @authent)
 
     worked = deleter.delete
     save_dialog(name, deleter)
@@ -290,22 +298,19 @@ class Ape
     end
 
     # See if it's gone from the feed
-    still_there = find_entry(entry_coll.href, "entry collection", entry_id)
+    still_there = find_entry(collection_uri, "entry collection", entry_id)
     if still_there.class != String
       error "Entry is still in collection post-deletion."
     else
       good "Entry not found in feed after deletion."
     end
 
-    if media_coll
-      test_media_posts media_coll.href
-    end
   end
 
   def test_media_posts media_collection
     # * Post a picture to the media collection
     #
-    poster = Poster.new(media_collection, @username, @password)
+    poster = Poster.new(media_collection, @authent)
     if poster.last_error
       error("Unacceptable URI for '#{media_coll.title}' collection: " +
       poster.last_error)
@@ -383,7 +388,7 @@ class Ape
     end
 
     name = 'Deletion of media link entry'
-    deleter = Deleter.new(edit_uri, @username, @password)
+    deleter = Deleter.new(edit_uri, @authent)
     worked = deleter.delete
     save_dialog(name, deleter)
     if worked
@@ -452,7 +457,7 @@ class Ape
 
   # Get a resource, optionally check its content-type
   def check_resource(uri, name, content_type, report=true)
-    resource = Getter.new(uri, @username, @password)
+    resource = Getter.new(uri, @authent)
 
     # * Check the URI
     if resource.last_error

@@ -10,15 +10,14 @@ class Putter
 
   attr_reader :last_error, :response, :crumbs, :headers
 
-  def initialize(uriString, username='', password='')
+  def initialize(uriString, authent)
     @crumbs = Crumbs.new
     @last_error = nil
     @uri = AtomURI.check(uriString)
     if (@uri.class == String)
       @last_error = @uri
     end
-    @username = username
-    @password = password
+    @authent = authent
     @headers = {}
   end
   
@@ -29,9 +28,8 @@ class Putter
 
   def put(contentType, body)
     req = Net::HTTP::Put.new(AtomURI.on_the_wire(@uri))
-    if @username
-      req.basic_auth @username, @password
-    end
+    @authent.add_to req
+
     req.set_content_type contentType
     @headers.each { |k, v| req[k]= v }
 

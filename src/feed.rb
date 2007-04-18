@@ -20,7 +20,7 @@ class Feed
     next_page = uri
     page_num = 1
 
-    while next_page do
+    while (next_page) && (page_num < 10) do
 
       label = "Page #{page_num} of #{name}"
       uris << next_page
@@ -45,6 +45,10 @@ class Feed
 
       feed = feed.root
       page_entries = REXML::XPath.match(feed, "./atom:entry", Names::XmlNamespaces)
+      if page_entries.empty? && report
+        ape.warning "#{label} has no entries."
+      end
+
       entries += page_entries.map { |e| Entry.new(e, next_page)}
       next_link = REXML::XPath.first(feed, "./atom:link[@rel=\"next\"]", Names::XmlNamespaces)
       if next_link
@@ -58,6 +62,10 @@ class Feed
         page_num += 1
       end
       next_page = next_link
+    end
+
+    if report && next_page
+      ape.warning "Stopped reading collection after #{page_num} pages." 
     end
 
     # all done unless we're error-checking
@@ -93,13 +101,11 @@ class Feed
       end
     end
     if with_app_date < entries.size
-      ape.error "#{entries.size - with_app_date} of #{entries.size} entries in #{label} lack app:edited elements."
+      ape.error "#{entries.size - with_app_date} of #{entries.size} entries in #{name} lack app:edited elements."
       clean = false
     end
 
-    if clean
-      ape.good "#{label} has correct app:edited value order."
-    end
+    ape.good "#{name} has correct app:edited value order." if clean
 
     entries
 

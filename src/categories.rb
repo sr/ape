@@ -10,7 +10,7 @@ class Categories
 
   attr_reader :fixed
 
-  def Categories.from_collection(collection, ape)
+  def Categories.from_collection(collection, ape=nil)
 
     # "catses" because if cats is short for categories, then catses 
     #  suggests multiple <app:categories> elements
@@ -20,17 +20,16 @@ class Categories
       if cats.attribute(:href)
         getter = Getter.new cats.attribute(:href).value
         if getter.last_error # wonky URI
-          ape.error getter.last_error
+          ape.error getter.last_error if ape
           nil
         end
 
         if !getter.get('application/atomcat+xml')
-          ape.error "Can't fetch categories doc " +
-          "'#{cats.attribute(:href).value}': getter.last_error"
+          ape.error "Can't fetch categories doc " + "'#{cats.attribute(:href).value}': getter.last_error" if ape
           nil
         end
 
-        ape.warning(getter.last_error) if getter.last_error
+        ape.warning(getter.last_error) if ape && getter.last_error
         REXML::Document.new(getter.body).root
       else
         # no href attribute
@@ -51,7 +50,7 @@ end
 def Categories.add_cats(entry, collection)
 
   added = []
-  c = from_collection(collection, self)
+  c = from_collection(collection)
   if c.empty?
     add_syntho = true
   else

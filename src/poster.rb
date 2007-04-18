@@ -9,17 +9,16 @@ require 'crumbs'
 
 class Poster
 
-  attr_reader :last_error, :response, :entry, :crumbs
+  attr_reader :last_error, :response, :entry, :crumbs, :uri
 
-  def initialize(uriString, username='', password='')
+  def initialize(uriString, authent)
     @last_error = nil
     @uri = AtomURI.check(uriString)
     @crumbs = Crumbs.new
     if (@uri.class == String)
       @last_error = @uri
     end
-    @username = username
-    @password = password
+    @authent = authent
     @headers = {}
     @entry = nil
   end
@@ -34,9 +33,7 @@ class Poster
 
   def post(contentType, body)
     req = Net::HTTP::Post.new(AtomURI.on_the_wire(@uri))
-    if @username
-      req.basic_auth @username, @password
-    end
+    @authent.add_to req
     req.set_content_type contentType
     @headers.each { |k, v| req[k]= v }
 

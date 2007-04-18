@@ -653,6 +653,7 @@ def Samples.basic_entry
   updated = now.strftime("%Y-%m-%dT%H:%M:%S%z").sub /(..)$/, ':\1'
   e += " <updated>#{updated}</updated>\n"
   summary = "Summary from the <APE> at #{updated}"
+  e += " <link href='http://www.tbray.org/ape'/>"
   e += " <summary type='html'>" + Escaper.escape(Escaper.escape(summary)) +
     "</summary>\n"
   e += " <content type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>" +
@@ -660,9 +661,7 @@ def Samples.basic_entry
     "<p>If you see this in an entry, it's probably a left-over from an " +
     "unsuccessful Ape run; feel free to delete it.</p>" +
     "</div></content>\n"
-  #
-  # The next line causes broken strings if you parse/unparse it
-  # e += " <dc:subject xmlns:dc='#{Names::DcNamespace}'>&#xce;&#xf1;&#x167;&#xea;&#x159;&#x144;&#xe5;&#x165;&#x129;&#x14d;&#x1f9;&#x101;&#x13a;&#x129;&#x17e;&#xe4;&#x167;&#x12b;&#x14d;&#xf1;</dc:subject>\n"
+    
   e += " <dc:subject xmlns:dc='#{Names::DcNamespace}'>Simians</dc:subject>\n"
   e += "</entry>\n"
   return e
