@@ -34,7 +34,8 @@ class Entry
   def content_src
     content = REXML::XPath.first(@element, './atom:content', Names::XmlNamespaces)
     if content
-      content.attributes['src']
+      cs = content.attributes['src']
+      cs = @base.absolutize(cs, @element) if @base
     else
       nil
     end

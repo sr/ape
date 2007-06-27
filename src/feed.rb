@@ -84,7 +84,7 @@ class Feed
             date = Time.parse(datestr)
             with_app_date += 1
             if last_date && (date > last_date)
-              error = "app:date values out of order"
+              error = "app:edited values out of order, d #{date} ld #{last_date}"
             end
             last_date = date
           rescue ArgumentError

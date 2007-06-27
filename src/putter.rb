@@ -28,7 +28,7 @@ class Putter
 
   def put(contentType, body)
     req = Net::HTTP::Put.new(AtomURI.on_the_wire(@uri))
-    @authent.add_to req
+    @authent.add_to req if @authent
 
     req.set_content_type contentType
     @headers.each { |k, v| req[k]= v }

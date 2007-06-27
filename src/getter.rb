@@ -37,7 +37,7 @@ class Getter
       http.use_ssl = true if @uri.scheme == 'https'
       http.set_debug_output @crumbs if @crumbs
       http.start do |http|
-        @authent.add_to req
+        @authent.add_to req if @authent
         @response = http.request(req)
         
         case @response

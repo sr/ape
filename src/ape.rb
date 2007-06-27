@@ -16,7 +16,7 @@ require 'putter'
 require 'feed'
 require 'html'
 require 'crumbs'
-require 'escaper'
+require 'escaper' 
 require 'categories'
 require 'names'
 require 'validator'
@@ -45,7 +45,9 @@ class Ape
   def check(uri, username=nil, password=nil,
     requested_e_coll = nil, requested_m_coll = nil)
 
-    @authent = Authent.new(username, password)
+    # Google athent weirdness
+    # @authent = Authent.new(username, password)
+    @authent = nil
     header(uri)
     begin
       might_fail(uri, requested_e_coll, requested_m_coll)
@@ -128,6 +130,7 @@ class Ape
     if entry_coll
       good "Will use collection '#{entry_coll.title}' for entry creation."
       test_entry_posts entry_coll
+      test_sorting entry_coll
     else
       warning "No collection for 'entry', won't test entry posting."
     end
@@ -138,6 +141,74 @@ class Ape
     else
       warning "No collection for 'image/jpeg', won't test media posting."
     end
+  end
+  
+  def test_sorting(coll)
+    
+    # We'll post three mini entries to the collection
+    mini = Samples.mini_entry
+    poster = Poster.new(coll.href, @authent)
+    ['One', 'Two', 'Three'].each do |num|
+      text = mini.gsub('Mini-1', "Mini #{num}")
+      name = "Posting Mini #{num}"
+      worked = poster.post(Names::AtomMediaType, text)
+      save_dialog(name, poster)
+      if !worked
+        error("Can't POST Mini #{name}: #{poster.last_error}", name)
+        return
+      end
+      sleep 2
+    end
+
+    # now let's grab the collection & check the order
+    wanted = ['Mini One', 'Mini Two', 'Mini Three']
+    two = nil
+    entries = Feed.read(coll.href, 'Entries with multi-post', self, true)
+    entries.each do |from_feed|
+      want = wanted.pop
+      unless from_feed.child_content('title').index(want)
+        error "Entries feed out of order after multi-post."
+        return
+      end
+      two = from_feed if want == 'Mini Two'
+      break if wanted.empty?
+    end
+    good "Entries correctly ordered after multi-post."
+    
+    # let's update one of them; have to fetch it first to get the ETag
+    link = two.link('edit', self)
+    two_resp = check_resource(link, 'fetch two', Names::AtomMediaType, false)
+    etag = two_resp.header 'etag'
+        
+    putter = Putter.new(link, @authent)
+    putter.set_header('If-Match', etag)
+    
+    name = 'Updating mini-entry with PUT'
+    unless putter.put(Names::AtomMediaType, mini.gsub('Mini-1', 'Mini-4'))
+      save_dialog(name, putter)
+      error("Can't update mini-entry at #{link}", name)
+      return
+    end
+    
+    # now the order should have changed
+    wanted = ['Mini One', 'Mini Three', 'Mini-4']
+    entries = Feed.read(coll.href, 'Entries post-update', self, true)
+    entries.each do |from_feed|
+      want = wanted.pop
+      unless from_feed.child_content('title').index(want)
+        error "Entries feed out of order after update of multi-post."
+        return
+      end
+      
+      # next to godliness
+      link = from_feed.link('edit', self)      
+      Deleter.new(link, @authent).delete
+      
+      break if wanted.empty?
+    end
+    good "Entries correctly ordered after update of multi-post."
+    
+    
   end
 
   def test_entry_posts(entry_collection)
@@ -158,7 +229,7 @@ class Ape
     poster = Poster.new(collection_uri, @authent)
     if poster.last_error
       error("Unacceptable URI for '#{entry_collection.title}' collection: " +
-      poster.last_error)
+             poster.last_error)
       return
     end
 
@@ -336,9 +407,10 @@ class Ape
 
     good("Post of image file reported success, media link location: " +
     "#{poster.header('Location')}", name)
-
+    
     # * Retrieve the media link entry
     mle_uri = poster.header('Location')
+        
     media_link_entry = check_resource(mle_uri, 'Retrieval of media link entry', Names::AtomMediaType)
     return unless media_link_entry
 
@@ -367,7 +439,7 @@ class Ape
     else
       warning "Client-provided slug '#{slug}' not used in Media Resource URI."
     end
-
+    
     media_link_id = media_link_entry.child_content('id')
 
     name = 'Retrieval of media resource'
@@ -405,6 +477,14 @@ class Ape
     else
       good "Media link entry no longer in feed."
     end
+    
+    # is the resource there any more?
+    if check_resource(content_src, name, 'image/jpeg', false)
+      error "Media resource still there after media link entry deletion."
+    else
+      good "Media resource no longer fetchable."
+    end
+    
   end
 
   def check_new_entry(as_posted, new_entry, desc)
@@ -441,8 +521,8 @@ class Ape
   #
 
   # Fetch a feed and look up an entry by ID in it
-  def find_entry(feed_uri, name, id)
-    entries = Feed.read(feed_uri, name, self, false)
+  def find_entry(feed_uri, name, id, report=false)
+    entries = Feed.read(feed_uri, name, self, report)
     entries.each do |from_feed|
       return from_feed if id == from_feed.child_content('id')
     end

@@ -3,7 +3,7 @@
 
 module Names
   AtomNamespace = 'http://www.w3.org/2005/Atom'
-  AppNamespace = 'http://purl.org/atom/app#'
+  AppNamespace = 'http://www.w3.org/2007/app'
   DcNamespace = 'http://purl.org/dc/elements/1.1/'
   XhtmlNamespace = 'http://www.w3.org/1999/xhtml'
   XmlNamespaces = {

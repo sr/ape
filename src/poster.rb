@@ -33,7 +33,7 @@ class Poster
 
   def post(contentType, body)
     req = Net::HTTP::Post.new(AtomURI.on_the_wire(@uri))
-    @authent.add_to req
+    @authent.add_to req if @authent
     req.set_content_type contentType
     @headers.each { |k, v| req[k]= v }
 
@@ -49,7 +49,10 @@ class Poster
           return false
         end
 
-        return true unless @response['Content-type'] =~ %r{^application/atom\+xml}
+        if (!((@response['Content-type'] =~ %r{^application/atom\+xml}) ||
+              (@response['Content-type'] =~ %r{^application/atom\+xml;type=entry})))
+          return true
+        end
 
         begin
           @entry = Entry.new(@response.body)
