@@ -14,6 +14,7 @@ module Names
   }
   
   AtomMediaType = 'application/atom+xml'
+  AtomEntryMediaType = 'application/atom+xml;type=entry'
   AppMediaType = 'application/atomsvc+xml'
 
 end

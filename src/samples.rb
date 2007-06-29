@@ -40,19 +40,18 @@ atomURI = text
 
 appCommonAttributes =
    attribute xml:base { atomURI }?,
-   attribute xml:lang { atomLanguageTag }?,
+   attribute xml:lang { atomLanguageTag  }?,
+   attribute xml:space {"default"|"preserved"}?,
    undefinedAttribute*
 
 
 atomCommonAttributes = appCommonAttributes
 
 undefinedAttribute =
-  attribute * - (xml:base | xml:lang | local:*) { text }
-
-
+  attribute * - (xml:base | xml:space  | xml:lang | local:*) { text }
 
 atomLanguageTag = xsd:string {
-   pattern = "[A-Za-z]{1,8}(-[A-Za-z0-9]{1,8})*"
+   pattern = "([A-Za-z]{1,8}(-[A-Za-z0-9]{1,8})*)?"
 }
 
 atomDateConstruct =
@@ -87,7 +86,7 @@ appCollection =
       appCommonAttributes,
       attribute href { atomURI  },
       ( atomTitle
-        & appAccept?
+        & appAccept*
         & appCategories*
         & extensionSansTitleElement* )
    }
@@ -107,7 +106,8 @@ appInlineCategories =
     element app:categories {
         attribute fixed { "yes" | "no" }?,
         attribute scheme { atomURI }?,
-        (atomCategory*)
+        (atomCategory*,
+        undefinedContent)
     }
 
 appOutOfLineCategories =
@@ -124,15 +124,8 @@ appCategories = appInlineCategories | appOutOfLineCategories
 appAccept =
    element app:accept {
          appCommonAttributes,
-         ( appTypeValue? )
+         ( text? )
    }
-
-
-appTypeValue = ( "entry" | media-type |entry-or-media-type  )
-media-type = xsd:string { pattern = "entry,(.+/.+,?)*" }
-entry-or-media-type = xsd:string { pattern = "(.+/.+,?)*" }
-# above is an approximation, rnc doesn't support interleaved text
-
 
 # Simple Extension
 
@@ -217,6 +210,7 @@ xhtmlDiv = element xhtml:div {
 }
 
 # EOF
+
 END_OF_SERVICE_SCHEMA
   end
   

@@ -46,8 +46,7 @@ class Ape
     requested_e_coll = nil, requested_m_coll = nil)
 
     # Google athent weirdness
-    # @authent = Authent.new(username, password)
-    @authent = nil
+    @authent = Authent.new(username, password)
     header(uri)
     begin
       might_fail(uri, requested_e_coll, requested_m_coll)
@@ -91,8 +90,8 @@ class Ape
       start_list "Found these collections"
       collections.each do |collection|
         list_item "'#{collection.title}' " +
-        "accepts #{collection.accept.join(', ')}"
-        if (!entry_coll) && collection.accept.index('entry')
+          "accepts #{collection.accept.join(', ')}"
+        if (!entry_coll) && collection.accept.index(Names::AtomEntryMediaType)
           if requested_e_coll
             if requested_e_coll == collection.title
               entry_coll = collection
@@ -479,6 +478,7 @@ class Ape
     end
     
     # is the resource there any more?
+    name = 'Check Media Resource deletion'
     if check_resource(content_src, name, 'image/jpeg', false)
       error "Media resource still there after media link entry deletion."
     else

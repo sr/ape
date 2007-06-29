@@ -55,7 +55,7 @@ class Getter
         end      
       end
     rescue Exception
-      @last_error = "Can't connect: #{$!}"
+      @last_error = "Can't connect to h=#{@uri.host}, p=#{@uri.port}: #{$!}"
       return false
     end
   end

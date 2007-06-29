@@ -28,11 +28,13 @@ class Collection
     end
 
     # now we have to go looking for the accept
-    @accept = REXML::XPath.match(input, './app:accept', Names::XmlNamespaces)
-    @accept = @accept.collect{ |a| a.texts.join.split(/,\s*/) }.flatten
+    @accept = []
+    REXML::XPath.each(input, './app:accept', Names::XmlNamespaces) do |a|
+      @accept << a.texts.join
+    end
 
     if @accept.empty?
-      @accept = [ "entry" ]
+      @accept = [ Names::AtomEntryMediaType ]
     end
   end
 
