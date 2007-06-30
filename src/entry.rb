@@ -121,7 +121,7 @@ class Entry
   
   def alt_links
     REXML::XPath.match(@element, "./atom:link", Names::XmlNamespaces).select do |l|
-      l.attributes['rel'] == nil || l.attributes['rel'] == 'alt'
+      l.attributes['rel'] == nil || l.attributes['rel'] == 'alternate'
     end
   end
 
