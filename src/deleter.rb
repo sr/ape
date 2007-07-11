@@ -37,7 +37,7 @@ class Deleter
         return false
       end
     rescue Exception
-      @last_error = "Can't connect: #{$!}"
+      @last_error = "Can't connect to #{@uri.host} on port #{@uri.port}: #{$!}"
       return nil
     end
   end

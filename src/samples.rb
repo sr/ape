@@ -10,7 +10,6 @@ require 'names'
 
 class Samples
 
-
   def Samples.foreign_child
     'subject'
   end

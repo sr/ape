@@ -58,6 +58,7 @@ class Ape
 
   def might_fail(uri, requested_e_coll = nil, requested_m_coll = nil)
 
+    info "TESTING: Service document and collections."
     name = 'Retrieval of Service Document'
     service = check_resource(uri, name, Names::AppMediaType)
     return unless service
@@ -90,7 +91,7 @@ class Ape
       start_list "Found these collections"
       collections.each do |collection|
         list_item "'#{collection.title}' " +
-          "accepts #{collection.accept.join(', ')}"
+        "accepts #{collection.accept.join(', ')}"
         if (!entry_coll) && collection.accept.index(Names::AtomEntryMediaType)
           if requested_e_coll
             if requested_e_coll == collection.title
@@ -137,12 +138,75 @@ class Ape
     if media_coll
       good "Will use collection '#{media_coll.title}' for media creation."
       test_media_posts media_coll.href
+      test_media_linkage media_coll
     else
       warning "No collection for 'image/jpeg', won't test media posting."
     end
   end
   
+  def test_media_linkage(coll)
+    info "TESTING: Media collection re-ordering after PUT."
+    
+    # We'll post three mini entries to the collection
+    data = Samples.picture
+    poster = Poster.new(coll.href, @authent)
+    ['One', 'Two', 'Three'].each do |num|
+      slug = "Picture {#num}"
+      poster.set_header('Slug', slug)
+      name = "Posting pic #{num}"
+      worked = poster.post('image/jpeg', data)
+      save_dialog(name, poster)
+      if !worked
+        error("Can't POST Picture #{num}: #{poster.last_error}", name)
+        return
+      end
+      sleep 2
+    end
+    
+    # grab the collection to gather the MLE ids
+    entries = Feed.read(coll.href, 'Pictures from multi-post', self, true)
+    ids = entries.map { |e| e.child_content('id)')}
+    
+    # let's update one of them; have to fetch it first to get the ETag
+    two_media = entries[1].content_src
+    two_resp = check_resource(two_media, 'Fetch image to get ETag', 'image/jpeg', true)
+    etag = two_resp.header 'etag'
+        
+    putter = Putter.new(two_media, @authent)
+    putter.set_header('If-Match', etag)
+    
+    name = 'Updating one of three pix with PUT'
+    if putter.put('image/jpeg', data)
+      good "Update one of newly posted pictures went OK."
+    else  
+      save_dialog(name, putter)
+      error("Can't update picture at #{two_media}", name)
+      return
+    end
+    
+    # now the order should have changed
+    wanted = [ ids[2], ids[0], ids[1] ]
+    entries = Feed.read(coll.href, 'MLEs post-update', self, true)
+    entries.each do |from_feed|
+      want = wanted.pop
+      unless from_feed.child_content('id').eql?(want)
+        error "Updating bits failed to re-order link entries in media collection."
+        return
+      end
+      
+      # next to godliness
+      link = from_feed.link('edit', self)      
+      Deleter.new(link, @authent).delete
+      
+      break if wanted.empty?
+    end
+    good "Entries correctly ordered after update of multi-post."
+
+  end
+  
   def test_sorting(coll)
+    
+    info "TESTING: Collection re-ordering after PUT."
     
     # We'll post three mini entries to the collection
     mini = Samples.mini_entry
@@ -214,21 +278,24 @@ class Ape
     
     collection_uri = entry_collection.href
     entries = Feed.read(collection_uri, 'Entry collection', self)
-
+    
     # * List the current entries, remember which IDs we've seen
+    info "TESTING: Entry-posting basics."
     ids = []
-    start_list "Now in the Entries feed"
-    entries.each do |entry|
-      list_item entry.summarize
-      ids << entry.child_content('id')
-    end
-    end_list
-
+    unless entries.empty?
+      start_list "Now in the Entries feed"
+      entries.each do |entry|
+        list_item entry.summarize
+        ids << entry.child_content('id')
+      end   
+      end_list
+    end 
+    
     # Setting up to post a new entry
     poster = Poster.new(collection_uri, @authent)
     if poster.last_error
       error("Unacceptable URI for '#{entry_collection.title}' collection: " +
-             poster.last_error)
+      poster.last_error)
       return
     end
 
@@ -335,7 +402,8 @@ class Ape
       good("Update of new entry reported success.", name)
       from_feed = find_entry(collection_uri, "entry collection", entry_id)
       if from_feed.class == String
-        error(from_feed, name)
+        check_resource(collection_uri, "Check collection after lost update", nil, true)
+        error "Updated entry ID #{entry_id} not found in entries collection."
         return
       end
       if from_feed.child_content('title') == new_title
@@ -378,6 +446,9 @@ class Ape
   end
 
   def test_media_posts media_collection
+    
+    info "TESTING: Posting to media collection."
+    
     # * Post a picture to the media collection
     #
     poster = Poster.new(media_collection, @authent)
