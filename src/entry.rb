@@ -89,6 +89,9 @@ class Entry
     #  XHTML <div> rather than this element
     if n.attributes['type'] == 'xhtml'
       n = REXML::XPath.first(n, "./xhtml:div", Names::XmlNamespaces)
+      unless n
+        return "Error: required xhtml:div child of #{field} is missing"
+      end
     end 
   
     text_from n
