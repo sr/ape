@@ -131,6 +131,11 @@ class Entry
   def summarize
     child_content('title')
   end
+  
+  # utility routine
+  def xpath_match(xp)
+    REXML::XPath.match(@element, xp, Names::XmlNamespaces)
+  end
 
   # debugging
   def Entry.dump(node, depth=0)
@@ -143,7 +148,6 @@ class Entry
       puts "#{prefix} #{node.getNodeName}"
     end
     Nodes.each_node(node.getChildNodes) {|child| dump(child, depth+1)}
-
   end
 
 end

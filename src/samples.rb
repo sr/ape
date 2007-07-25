@@ -673,6 +673,24 @@ END_OF_MINI_ENTRY
     e += "</entry>\n"
     return e
   end
+  
+  def Samples.unclean_xhtml_entry
+    e = '<entry xmlns="http://www.w3.org/2005/Atom">' + "\n"
+    e +=  "<title>Unclean!</title>"
+    e += " <author><name>The Atom Protocol Exerciser</name></author>\n"
+    now = DateTime::now
+    e += " <id>#{make_id}</id>\n"
+    updated = now.strftime("%Y-%m-%dT%H:%M:%S%z").sub /(..)$/, ':\1'
+    e += " <updated>#{updated}</updated>\n"
+    e += " <summary type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>"
+    e += "<p>hey</p><script src='http://www.example.com/xxx' /> "
+    e += "<script>alert('XXX')</script>"
+    e += "<p id='x1' background=\"javascript:alert('XSS')\">Hey</p></div></summary>\n"
+    e +=   "<content type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>"
+    e +=   "<p id='x2' style='...whatever...'>OK</p><object>No No No</object>"
+    e +=   "<a href='/no-problemo'>aah</a><a href='javascript:evil'>ouch</a>"
+    e +=   "</div></content></entry>"
+  end
 
   def Samples.cat_test_entry
     e = retitled_entry('Testing category posting')
