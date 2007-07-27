@@ -169,7 +169,7 @@ class Ape
     ids = entries.map { |e| e.child_content('id)')}
     
     # let's update one of them; have to fetch it first to get the ETag
-    two_media = entries[1].content_src
+    two_media = entries[1].link('edit-media')
     two_resp = check_resource(two_media, 'Fetch image to get ETag', 'image/jpeg', true)
     etag = two_resp.header 'etag'
         
