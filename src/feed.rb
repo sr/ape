@@ -50,6 +50,7 @@ class Feed
       end
 
       entries += page_entries.map { |e| Entry.new(e, next_page)}
+      
       next_link = REXML::XPath.first(feed, "./atom:link[@rel=\"next\"]", Names::XmlNamespaces)
       if next_link
         next_link = next_link.attributes['href']

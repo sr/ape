@@ -166,10 +166,19 @@ class Ape
     
     # grab the collection to gather the MLE ids
     entries = Feed.read(coll.href, 'Pictures from multi-post', self, true)
+    if entries.size < 3 
+      error "Pictures apparently not in collection"
+      return
+    end
+      
     ids = entries.map { |e| e.child_content('id)')}
     
     # let's update one of them; have to fetch it first to get the ETag
     two_media = entries[1].link('edit-media')
+    if !two_media
+      error "Second entry from feed doesn't have an 'edit-media' link."
+      return
+    end
     two_resp = check_resource(two_media, 'Fetch image to get ETag', 'image/jpeg', true)
     etag = two_resp.header 'etag'
         
