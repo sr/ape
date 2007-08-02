@@ -10,7 +10,7 @@ class Categories
 
   attr_reader :fixed
 
-  def Categories.from_collection(collection, ape=nil)
+  def Categories.from_collection(collection, authent, ape=nil)
 
     # "catses" because if cats is short for categories, then catses 
     #  suggests multiple <app:categories> elements
@@ -18,7 +18,7 @@ class Categories
 
     catses.collect! do |cats|
       if cats.attribute(:href)
-        getter = Getter.new cats.attribute(:href).value
+        getter = Getter.new(cats.attribute(:href).value, authent)
         if getter.last_error # wonky URI
           ape.error getter.last_error if ape
           nil
@@ -47,10 +47,10 @@ end
 #  at least one with fixed="no", also add a syntho-cat that we make up.
 #  Return the list of categories that we added.
 #
-def Categories.add_cats(entry, collection)
+def Categories.add_cats(entry, collection, authent)
 
   added = []
-  c = from_collection(collection)
+  c = from_collection(collection, authent)
   if c.empty?
     add_syntho = true
   else
