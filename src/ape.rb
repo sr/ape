@@ -39,6 +39,7 @@ class Ape
     @steps = []
     @header = @footer = nil
     @lnum = 1
+    @errors = @warnings = 0
   end
 
   # Args: APP URI, username/password, preferred entry/media collections
@@ -707,6 +708,7 @@ class Ape
   end
 
   def warning(message, crumb_key=nil)
+    @warnings += 1
     if @dialogs
       step "D#{crumb_key}" if crumb_key
       show_crumbs(crumb_key) if crumb_key && @@debugging
@@ -715,6 +717,7 @@ class Ape
   end
 
   def error(message, crumb_key=nil)
+    @errors += 1
     if @dialogs
       step "D#{crumb_key}" if crumb_key
       show_crumbs(crumb_key) if crumb_key && @@debugging
@@ -788,6 +791,11 @@ class Ape
         @w.text! "\n"
         if @header
           @w.p { @w.text! @header }
+          @w.p do
+            @w.text! "Summary: "
+            @w.text!((@errors == 1) ? '1 error, ' : "#{@errors} errors, ")
+            @w.text!((@warnings == 1) ? '1 warning.' : "#{@warnings} warnings.")
+          end
           @w.text! "\n"
         end
         @w.ol do
