@@ -153,7 +153,7 @@ class Ape
     data = Samples.picture
     poster = Poster.new(coll.href, @authent)
     ['One', 'Two', 'Three'].each do |num|
-      slug = "Picture {#num}"
+      slug = "Picture #{num}"
       poster.set_header('Slug', slug)
       name = "Posting pic #{num}"
       worked = poster.post('image/jpeg', data)
