@@ -220,7 +220,7 @@ class Ape
     
     poster = Poster.new(coll.href, @authent)
     name = 'Posting unclean XHTML'
-    worked = poster.post(Names::AtomMediaType, Samples.unclean_xhtml_entry)
+    worked = poster.post(Names::AtomEntryMediaType, Samples.unclean_xhtml_entry)
     if !worked
       save_dialog(name, poster)
       error("Can't POST unclean XHTML: #{poster.last_error}", name)
@@ -270,7 +270,7 @@ class Ape
     ['One', 'Two', 'Three'].each do |num|
       text = mini.gsub('Mini-1', "Mini #{num}")
       name = "Posting Mini #{num}"
-      worked = poster.post(Names::AtomMediaType, text)
+      worked = poster.post(Names::AtomEntryMediaType, text)
       save_dialog(name, poster)
       if !worked
         error("Can't POST Mini #{name}: #{poster.last_error}", name)
@@ -303,7 +303,7 @@ class Ape
     putter.set_header('If-Match', etag)
     
     name = 'Updating mini-entry with PUT'
-    unless putter.put(Names::AtomMediaType, mini.gsub('Mini-1', 'Mini-4'))
+    unless putter.put(Names::AtomEntryMediaType, mini.gsub('Mini-1', 'Mini-4'))
       save_dialog(name, putter)
       error("Can't update mini-entry at #{link}", name)
       return
@@ -367,7 +367,7 @@ class Ape
     @cats = Categories.add_cats(my_entry, entry_collection, @authent)
 
     # * OK, post it
-    worked = poster.post(Names::AtomMediaType, my_entry.to_s)
+    worked = poster.post(Names::AtomEntryMediaType, my_entry.to_s)
     name = 'Posting new entry'
     save_dialog(name, poster)
     if !worked
@@ -451,7 +451,7 @@ class Ape
 
     new_title = "Let's all do the Ape!"
     new_text = Samples.retitled_entry(new_title, entry_id)
-    response = putter.put(Names::AtomMediaType, new_text)
+    response = putter.put(Names::AtomEntryMediaType, new_text)
     save_dialog(name, putter)
 
     if response
@@ -876,7 +876,7 @@ class Ape
           @w.text! line
           @w.br
         end
-        @w.text! lines[-1]
+        @w.text! lines[-1] if lines[-1]
 
         if dialog
           @w.a(:class => 'diaref', :href => "#dia-#{@dianum}") do
