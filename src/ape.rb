@@ -134,7 +134,7 @@ class Ape
       test_sorting entry_coll
       test_sanitization entry_coll
     else
-      warning "No collection for 'entry', won't test entry posting."
+      warning "No collection for 'application/atom+xml;type=entry', won't test entry posting."
     end
 
     if media_coll

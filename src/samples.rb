@@ -641,6 +641,7 @@ END_OF_ATOM_SCHEMA
   def Samples.mini_entry
     now = DateTime::now
     return <<END_OF_MINI_ENTRY
+<?xml version="1.0" ?>
 <entry xmlns="http://www.w3.org/2005/Atom">
   <title>Entry Mini-1</title>
   <author><name>EM</name></author>
@@ -652,7 +653,8 @@ END_OF_MINI_ENTRY
   end
 
   def Samples.basic_entry
-    e = '<entry xmlns="http://www.w3.org/2005/Atom">' + "\n"
+    e = '<?xml version="1.0" ?>'
+    e += '<entry xmlns="http://www.w3.org/2005/Atom">' + "\n"
     e += ' <title>' + Escaper.escape('From the <APE> (サル)') + "</title>\n"
     e += " <author><name>The Atom Protocol Exerciser</name></author>\n"
     now = DateTime::now
@@ -675,7 +677,8 @@ END_OF_MINI_ENTRY
   end
   
   def Samples.unclean_xhtml_entry
-    e = '<entry xmlns="http://www.w3.org/2005/Atom">' + "\n"
+    e = '<?xml version="1.0" ?>'
+    e += '<entry xmlns="http://www.w3.org/2005/Atom">' + "\n"
     e +=  "<title>Unclean!</title>"
     e += " <author><name>The Atom Protocol Exerciser</name></author>\n"
     now = DateTime::now

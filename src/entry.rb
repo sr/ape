@@ -28,7 +28,7 @@ class Entry
   end
 
   def to_s
-    @element.to_s
+    "<?xml version='1.0' ?>\n" + @element.to_s
   end
 
   def content_src
