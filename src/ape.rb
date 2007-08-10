@@ -901,39 +901,39 @@ class Ape
     @w.div(:class => tf) { @w.target! << message }
   end
 
-  def report_text
-    puts @header if @header
+  def report_text(output=STDOUT)
+    output.puts @header if @header
     @steps.each do |step|
       if step.class == Crumbs
-        puts "   Dialog:"
-        step.each { |crumb| puts "     #{crumb}" }
+        output.puts "   Dialog:"
+        step.each { |crumb| output.puts "     #{crumb}" }
       else
         body = step[1 .. -1]
         case step[0,1]
         when "W"
           line
-          puts "WARNING: #{body}"
+          output.puts "WARNING: #{body}"
         when "E"
           line
-          puts "ERROR: #{body}"
+          output.puts "ERROR: #{body}"
         when "G"
           line
-          puts body
+          output.puts body
         when "L"
           line
-          puts body
+          output.puts body
         when "e"
           # no-op
         when "I"
-          puts "     #{body}"
+          output.puts "     #{body}"
         when "D"
           # later, dude
         else
           line
-          puts "HUH? #{body}"
+          output.puts "HUH? #{body}"
         end
       end
-      puts @footer if @footer
+      output.puts @footer if @footer
     end
   end
 
