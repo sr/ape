@@ -10,16 +10,18 @@ class Authent
     @password = password
   end
 
-  # AARGH... the pain.  RFC 2617 should apply
-  def add_to(req)
-    if @username == 'interop.tim@gmail.com'
-      req['Authorization'] = 'GoogleLogin auth=DQAAAHUAAADmkxEt_8Ke4Yc8o-VHVbRvsosLkkLQVerxE3umRwDXPbvx2kSs-VHC-3WWVQHXgonBHr2FAydmxRsZxXRkE5jG8jm3GHJbumaWwXsC_mDRzSTkQcgaLyoT6kgy34xKlusJGnsOzZ3EG38eiZ8FS0AW8TBQ8B-o6Dpm8hblcNIxzw'
-    elsif @username == '10283'
-      req['X-WSSE'] = wsse_auth(@username, @password)
-    elsif @username
+  def add_to(req, authentication)
+    if authentication.strip.include? 'GoogleLogin'
+      #GOOGLE LOGIN DQAAAHUAAADmkxEt_8Ke4Yc8o-VHVbRvsosLkkLQVerxE3umRwDXPbvx2kSs-VHC-3WWVQHXgonBHr2FAydmxRsZxXRkE5jG8jm3GHJbumaWwXsC_mDRzSTkQcgaLyoT6kgy34xKlusJGnsOzZ3EG38eiZ8FS0AW8TBQ8B-o6Dpm8hblcNIxzw
+      req['Authorization'] = "GoogleLogin auth=#{@username}"
+    elsif authentication.strip.include? 'WSSE'
+      req['X-WSSE'] = wsse_auth
+      req['Authorization'] = authentication
+    elsif authentication.strip.include? 'Basic'
       req.basic_auth @username, @password
     end
   end
+
 
   # Known to interoperate with Hiroshi ASAKURA's NTT photo friends
   #  app.

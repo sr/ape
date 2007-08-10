@@ -21,8 +21,8 @@ class Getter
     @authent = authent
   end
 
-  def get(contentType = nil, depth = 0)
-    req = Net::HTTP::Get.new(AtomURI.on_the_wire(@uri))
+  def get(contentType = nil, depth = 0, req = nil)
+    req = Net::HTTP::Get.new(AtomURI.on_the_wire(@uri)) unless req
     @last_error = nil
 
     if (depth > 10)
@@ -30,17 +30,23 @@ class Getter
       @last_error = "Too many redirects"
       return false
     end
-
+    
     begin
       http = Net::HTTP.new(@uri.host, @uri.port)
   
       http.use_ssl = true if @uri.scheme == 'https'
       http.set_debug_output @crumbs if @crumbs
+     
       http.start do |http|
-        @authent.add_to req if @authent
         @response = http.request(req)
         
         case @response
+        when Net::HTTPUnauthorized
+          if @authent && @response['WWW-Authenticate']            
+            @authent.add_to req, @response['WWW-Authenticate']
+            return get(contentType, depth + 1, req)
+          end
+          
         when Net::HTTPSuccess
           return getBody(contentType)
           

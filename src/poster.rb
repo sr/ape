@@ -31,9 +31,8 @@ class Poster
     @headers[name] = val
   end
 
-  def post(contentType, body)
-    req = Net::HTTP::Post.new(AtomURI.on_the_wire(@uri))
-    @authent.add_to req if @authent
+  def post(contentType, body, req = nil)
+    req = Net::HTTP::Post.new(AtomURI.on_the_wire(@uri)) unless req
     req.set_content_type contentType
     @headers.each { |k, v| req[k]= v }
 
@@ -44,6 +43,11 @@ class Poster
       http.start do |http|
         @response = http.request(req, body)
 
+        if @response.kind_of?(Net::HTTPUnauthorized) && @authent
+           @authent.add_to req, @response['WWW-Authenticate']
+            return post(contentType, body, req)
+        end
+        
         if @response.code != '201'
           @last_error = @response.message
           return false

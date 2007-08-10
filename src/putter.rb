@@ -26,10 +26,9 @@ class Putter
   end
 
 
-  def put(contentType, body)
-    req = Net::HTTP::Put.new(AtomURI.on_the_wire(@uri))
-    @authent.add_to req if @authent
-
+  def put(contentType, body, req = nil)
+    req = Net::HTTP::Put.new(AtomURI.on_the_wire(@uri)) unless req
+    
     req.set_content_type contentType
     @headers.each { |k, v| req[k]= v }
 
@@ -39,6 +38,11 @@ class Putter
       http.set_debug_output @crumbs if @crumbs
       http.start do |http|
         @response = http.request(req, body)
+        
+        if @response.kind_of?(Net::HTTPUnauthorized) && @authent
+           @authent.add_to req, @response['WWW-Authenticate']
+            return put(contentType, body, req)
+        end
         
         unless @response.kind_of? Net::HTTPSuccess
           @last_error = @response.message

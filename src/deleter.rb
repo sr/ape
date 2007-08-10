@@ -20,9 +20,8 @@ class Deleter
     @authent = authent
   end
 
-  def delete
-    req = Net::HTTP::Delete.new(AtomURI.on_the_wire(@uri))
-    @authent.add_to req if @authent
+  def delete( req = nil )
+    req = Net::HTTP::Delete.new(AtomURI.on_the_wire(@uri)) unless req
 
     begin
       http = Net::HTTP.new(@uri.host, @uri.port)
@@ -30,6 +29,11 @@ class Deleter
       http.set_debug_output @crumbs if @crumbs
       http.start do |http|
         @response = http.request(req)
+        
+        if @response.kind_of?(Net::HTTPUnauthorized) && @authent
+           @authent.add_to req, @response['WWW-Authenticate']
+            return delete(req)
+        end
         
         return true if @response.kind_of? Net::HTTPSuccess
 
