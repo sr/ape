@@ -55,7 +55,7 @@ class Feed
       if next_link
         next_link = next_link.attributes['href']
         base = AtomURI.new(next_page)
-        next_link = base.absolutize(next_link, feed).to_s
+        next_link = base.absolutize(next_link, feed)
         if uris.index(next_link)
           ape.error "Collection contains circular 'next' linkage: #{next_link}" if report
           break

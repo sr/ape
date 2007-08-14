@@ -17,9 +17,9 @@ class AtomURI
   #  containing element) absolutize it if it's relative, with proper regard
   #  for xml:base 
   #
-  def absolutize uri, context
-    uri = URI.parse uri
-    return uri if uri.absolute?
+  def absolutize uri_s, context
+    uri = URI.parse uri_s
+    return uri_s if uri.absolute?
     
     path_base = @base
     path_to(context).each do |node|
@@ -29,7 +29,7 @@ class AtomURI
       end
     end
 
-    path_base.merge uri
+    path_base.merge(uri).to_s
   end
 
   def path_to node
