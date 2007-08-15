@@ -46,7 +46,7 @@ class Feed
       feed = feed.root
       page_entries = REXML::XPath.match(feed, "./atom:entry", Names::XmlNamespaces)
       if page_entries.empty? && report
-        ape.warning "#{label} has no entries."
+        ape.info "#{label} has no entries."
       end
 
       entries += page_entries.map { |e| Entry.new(e, next_page)}

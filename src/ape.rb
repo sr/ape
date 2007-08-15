@@ -44,7 +44,7 @@ class Ape
 
   # Args: APP URI, username/password, preferred entry/media collections
   def check(uri, username=nil, password=nil,
-    requested_e_coll = nil, requested_m_coll = nil)
+      requested_e_coll = nil, requested_m_coll = nil)
 
     # Google athent weirdness
     @authent = Authent.new(username, password)
@@ -53,7 +53,7 @@ class Ape
       might_fail(uri, requested_e_coll, requested_m_coll)
     rescue Exception
       error "Ouch! Ape fall down go boom; details: " +
-      "#{$!}\n#{$!.class}\n#{$!.backtrace}"
+        "#{$!}\n#{$!.class}\n#{$!.backtrace}"
     end
   end
 
@@ -92,7 +92,7 @@ class Ape
       start_list "Found these collections"
       collections.each do |collection|
         list_item "'#{collection.title}' " +
-        "accepts #{collection.accept.join(', ')}"
+          "accepts #{collection.accept.join(', ')}"
         if (!entry_coll) && collection.accept.index(Names::AtomEntryMediaType)
           if requested_e_coll
             if requested_e_coll == collection.title
@@ -129,7 +129,7 @@ class Ape
     end_list
 
     if entry_coll
-      good "Will use collection '#{entry_coll.title}' for entry creation."
+      info "Will use collection '#{entry_coll.title}' for entry creation."
       test_entry_posts entry_coll
       test_sorting entry_coll
       test_sanitization entry_coll
@@ -138,7 +138,7 @@ class Ape
     end
 
     if media_coll
-      good "Will use collection '#{media_coll.title}' for media creation."
+      info "Will use collection '#{media_coll.title}' for media creation."
       test_media_posts media_coll.href
       test_media_linkage media_coll
     else
@@ -240,6 +240,7 @@ class Ape
       return
     end
 
+    no_problem = true
     patterns = {
       '//xhtml:script' => "Published entry retains xhtml:script element.",
       '//*[@background]' => "Published entry retains 'background' attribute.",
@@ -251,6 +252,7 @@ class Ape
     entry.xpath_match('//xhtml:a').each do |a|
       if a.attributes['href'] =~ /^([a-zA-Z]+):/
         if $1 != 'http'
+          no_problem = false
           warning "Published entry retains dangerous hyperlink: '#{a.attributes['href']}'." 
         end
       end
@@ -258,6 +260,8 @@ class Ape
 
     link = entry.link('edit', self)      
     Deleter.new(link, @authent).delete
+    
+    good "Published entry appears to be sanitized." if no_problem
   end
   
   def test_sorting(coll)
@@ -351,7 +355,7 @@ class Ape
     poster = Poster.new(collection_uri, @authent)
     if poster.last_error
       error("Unacceptable URI for '#{entry_collection.title}' collection: " +
-      poster.last_error)
+          poster.last_error)
       return
     end
 
@@ -381,7 +385,7 @@ class Ape
       return
     end
     good("Posting of new entry to the Entries collection " +
-    "reported success, Location: #{location}", name)
+        "reported success, Location: #{location}", name)
 
     info "Examining the new entry as returned in the POST response"
     check_new_entry(my_entry, poster.entry, "Returned entry") if poster.entry
@@ -487,7 +491,7 @@ class Ape
       good("Entry deletion reported success.", name)
     else
       error("Couldn't delete the entry that was posted: " + deleter.last_error,
-      name)
+        name)
       return
     end
 
@@ -502,7 +506,7 @@ class Ape
   end
 
   def test_media_posts media_collection
-    
+        
     info "TESTING: Posting to media collection."
     
     # * Post a picture to the media collection
@@ -510,7 +514,7 @@ class Ape
     poster = Poster.new(media_collection, @authent)
     if poster.last_error
       error("Unacceptable URI for '#{media_coll.title}' collection: " +
-      poster.last_error)
+          poster.last_error)
       return
     end
 
@@ -527,12 +531,12 @@ class Ape
     save_dialog(name, poster)
     if !worked
       error("Can't POST picture to media collection: #{poster.last_error}",
-      name)
+        name)
       return
     end
 
     good("Post of image file reported success, media link location: " +
-    "#{poster.header('Location')}", name)
+        "#{poster.header('Location')}", name)
     
     # * Retrieve the media link entry
     mle_uri = poster.header('Location')
@@ -959,12 +963,12 @@ class Ape
         t2 = e2.child_type(field)
         if t1 != t2
           warning "'#{field}' has type='#{t1}' " +
-          "in #{e1Name}, type='#{t2}' in #{e2Name}."
+            "in #{e1Name}, type='#{t2}' in #{e2Name}."
         else
           c1 = Escaper.escape(c1)
           c2 = Escaper.escape(c2)
           warning "'#{field}' in #{e1Name} [#{c1}] " +
-          "differs from that in #{e2Name} [#{c2}]."
+            "differs from that in #{e2Name} [#{c2}]."
         end
       end
     end
