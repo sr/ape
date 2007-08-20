@@ -18,11 +18,12 @@ class Getter
     if (@uri.class == String)
       @last_error = @uri
     end
-    @authent = authent
+    @authent = authent 
   end
 
   def get(contentType = nil, depth = 0, req = nil)
     req = Net::HTTP::Get.new(AtomURI.on_the_wire(@uri)) unless req
+    @authent.add_to req
     @last_error = nil
 
     if (depth > 10)

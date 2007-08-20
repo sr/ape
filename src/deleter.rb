@@ -22,6 +22,7 @@ class Deleter
 
   def delete( req = nil )
     req = Net::HTTP::Delete.new(AtomURI.on_the_wire(@uri)) unless req
+    @authent.add_to req
 
     begin
       http = Net::HTTP.new(@uri.host, @uri.port)

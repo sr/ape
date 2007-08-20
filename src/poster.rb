@@ -33,6 +33,7 @@ class Poster
 
   def post(contentType, body, req = nil)
     req = Net::HTTP::Post.new(AtomURI.on_the_wire(@uri)) unless req
+    @authent.add_to req
     req.set_content_type contentType
     @headers.each { |k, v| req[k]= v }
 
