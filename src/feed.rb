@@ -1,5 +1,5 @@
 #   Copyright © 2006 Sun Microsystems, Inc. All rights reserved
-#   Use is subject to license terms - see file "LICENSE"
+# Use is subject to license terms - see file "LICENSE"
 
 require 'rexml/document'
 require 'rexml/xpath'
@@ -44,6 +44,11 @@ class Feed
       end
 
       feed = feed.root
+      if feed == nil
+        ape.warning "#{label} is empty."
+        break
+      end
+      
       page_entries = REXML::XPath.match(feed, "./atom:entry", Names::XmlNamespaces)
       if page_entries.empty? && report
         ape.info "#{label} has no entries."
