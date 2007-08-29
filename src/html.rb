@@ -17,9 +17,7 @@ EndOfText
   def HTML.headers(output)
     output.puts "Status: 200 OK\r"
     output.puts "Content-type: text/html; charset=utf-8\r"
-    output.puts "
-"
-    output.puts "<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.1//EN' 'http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd'>"
+    output.puts "\r"
     output.puts "<html>\n<head>\n"
     output.puts "<link rel='stylesheet' type='text/css' href='/ape/ape.css' />"
   end

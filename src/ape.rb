@@ -172,7 +172,7 @@ class Ape
       return
     end
       
-    ids = entries.map { |e| e.child_content('id)')}
+    ids = entries.map { |e| e.child_content('id)') }
     
     # let's update one of them; have to fetch it first to get the ETag
     two_media = entries[1].link('edit-media')
@@ -181,6 +181,10 @@ class Ape
       return
     end
     two_resp = check_resource(two_media, 'Fetch image to get ETag', 'image/jpeg', true)
+    unless two_resp
+      error "Can't fetch image to get ETag"
+      return
+    end
     etag = two_resp.header 'etag'
         
     putter = Putter.new(two_media, @authent)
@@ -272,6 +276,7 @@ class Ape
     mini = Samples.mini_entry
     poster = Poster.new(coll.href, @authent)
     ['One', 'Two', 'Three'].each do |num|
+      sleep 2
       text = mini.gsub('Mini-1', "Mini #{num}")
       name = "Posting Mini #{num}"
       worked = poster.post(Names::AtomEntryMediaType, text)
@@ -280,7 +285,6 @@ class Ape
         error("Can't POST Mini #{name}: #{poster.last_error}", name)
         return
       end
-      sleep 2
     end
 
     # now let's grab the collection & check the order
@@ -307,6 +311,7 @@ class Ape
     putter.set_header('If-Match', etag)
     
     name = 'Updating mini-entry with PUT'
+    sleep 2
     unless putter.put(Names::AtomEntryMediaType, mini.gsub('Mini-1', 'Mini-4'))
       save_dialog(name, putter)
       error("Can't update mini-entry at #{link}", name)
@@ -481,7 +486,7 @@ class Ape
       error "Entry in feed has no edit link."
       return
     end
-
+    
     name = 'New Entry deletion'
     deleter = Deleter.new(edit_uri, @authent)
 
