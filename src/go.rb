@@ -5,7 +5,7 @@ require 'cgi'
 require 'html'
 require 'ape'
 
-cgi = CGI.new "html4"
+cgi = CGI.new 
 
 if !cgi['uri'] || (cgi['uri'] == '')
   HTML.error "URI argument is required"

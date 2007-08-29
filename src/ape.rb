@@ -14,7 +14,6 @@ require 'collection'
 require 'deleter'
 require 'putter'
 require 'feed'
-require 'html'
 require 'crumbs'
 require 'escaper' 
 require 'categories'
@@ -775,8 +774,6 @@ class Ape
     end
   end
 
-
-
   def report_html(output=STDOUT)
     dialog = nil
 
@@ -784,7 +781,6 @@ class Ape
       output.puts "Status: 200 OK\r"
       output.puts "Content-type: text/html; charset=utf-8\r"
       output.puts "\r"
-      output.puts "<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.1//EN' 'http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd'>"
     end
 
     @w = Builder::XmlMarkup.new(:target => output)
@@ -792,7 +788,7 @@ class Ape
       @w.head do
         @w.title { @w.text! 'Atom Protocol Exerciser Report' }
         @w.text! "\n"
-        @w.link(:rel => 'stylesheet', :type => 'text/css',:href => '/ape/ape.css' )
+        @w.link(:rel => 'stylesheet', :type => 'text/css',:href => '../ape/ape.css' )
       end
       @w.text! "\n"
       @w.body do
@@ -989,7 +985,7 @@ class Ape
     when :exclamation
       @w.span(:class => 'error') { @w.text! '!' }
     when :info
-      @w.img(:align => 'top', :src => '/ape/info.png')
+      @w.img(:align => 'top', :src => '../ape/info.png')
     end
   end
 
