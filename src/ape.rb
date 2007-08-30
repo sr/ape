@@ -902,7 +902,7 @@ class Ape
     message.gsub!(/\\"/, '"')
     message = Escaper.escape message
     message.gsub!(/\\n/, "\n<br/>")
-    message.gsub!(/\\t/, '&nbsp;&nbsp;&nbsp;&nbsp;')
+    message.gsub!(/\\t/, '&#xa0;&#xa0;&#xa0;&#xa0;')
     @w.div(:class => tf) { @w.target! << message }
   end
 
