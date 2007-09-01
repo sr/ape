@@ -457,7 +457,7 @@ class Ape
     # Conditional PUT if an etag
     putter.set_header('If-Match', etag) if etag
 
-    new_title = "Let's all do the Ape!"
+    new_title = "Let’s all do the Ape!"
     new_text = Samples.retitled_entry(new_title, entry_id)
     response = putter.put(Names::AtomEntryMediaType, new_text)
     save_dialog(name, putter)
@@ -471,9 +471,10 @@ class Ape
         return
       end
       if from_feed.child_content('title') == new_title
-        good "Update reflected in new entry."
+        good "Title of new entry successfully updated."
       else
-        warning "PUT apparently not reflected in the entry."
+        warning "After PUT update of title, Expected " +
+          "'#{new_title}', but saw '#{from_feed.child_content('title')}'"
       end
     else
       warning("Can't update new entry with PUT: #{putter.last_error}", name)

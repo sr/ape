@@ -78,7 +78,8 @@ class Entry
 
   def child_type(field)
     n = get_child(field, nil)
-    (n) ? n.attributes['type'] : nil
+    return nil unless n
+    return n.attributes['type'] || "text"
   end
 
   def child_content(field, namespace = nil)
