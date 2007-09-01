@@ -32,6 +32,7 @@ class Feed
 
       # XML-parse the feed
       error = "not well-formed"
+      feed = nil
       begin
         feed = REXML::Document.new(page.body, { :raw => nil })
       rescue Exception
@@ -39,7 +40,7 @@ class Feed
         feed = nil
       end
       if feed == nil
-        ape.error "Can't parse #{label} at #{next_page}, Parser said: #{$!}; Feed text: #{text}" if report
+        ape.error "Can't parse #{label} at #{next_page}, Parser said: #{$!}" if report
         break
       end
 
