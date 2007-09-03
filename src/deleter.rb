@@ -28,8 +28,8 @@ class Deleter
       http = Net::HTTP.new(@uri.host, @uri.port)
       http.use_ssl = true if @uri.scheme == 'https'
       http.set_debug_output @crumbs if @crumbs
-      http.start do |http|
-        @response = http.request(req)
+      http.start do |connection|
+        @response = connection.request(req)
         
         if @response.kind_of?(Net::HTTPUnauthorized) && @authent
            @authent.add_to req, @response['WWW-Authenticate']
