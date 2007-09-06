@@ -13,13 +13,14 @@ class Authent
   def add_to(req, authentication = nil)
     return unless @username && @password
     if (authentication)
-      if authentication.strip.include? 'GoogleLogin'
+      auth = authentication.strip.downcase
+      if auth.include? 'googlelogin'
         #GOOGLE LOGIN DQAAAHUAAADmkxEt_8Ke4Yc8o-VHVbRvsosLkkLQVerxE3umRwDXPbvx2kSs-VHC-3WWVQHXgonBHr2FAydmxRsZxXRkE5jG8jm3GHJbumaWwXsC_mDRzSTkQcgaLyoT6kgy34xKlusJGnsOzZ3EG38eiZ8FS0AW8TBQ8B-o6Dpm8hblcNIxzw
         req['Authorization'] = "GoogleLogin auth=#{@username}"
-      elsif authentication.strip.include? 'WSSE'
+      elsif auth.include? 'wsse'
         req['X-WSSE'] = wsse_auth
         req['Authorization'] = authentication
-      elsif authentication.strip.include?('Basic')
+      elsif auth.include? 'basic'
         req.basic_auth @username, @password
       end
     else

@@ -2,28 +2,15 @@
 #   Use is subject to license terms - see file "LICENSE"
 
 require 'net/http'
-require 'net/https'
-require 'uri'
 require 'atomURI'
-require 'crumbs'
+require 'invoker'
 
-class Getter
+class Getter < Invoker
 
-  attr_reader :last_error, :contentType, :charset, :body, :crumbs, :response
-
-  def initialize(uri, authent)
-    @last_error = nil
-    @crumbs = Crumbs.new
-    @uri = AtomURI.check(uri)
-    if (@uri.class == String)
-      @last_error = @uri
-    end
-    @authent = authent 
-  end
+  attr_reader :contentType, :charset, :body
 
   def get(contentType = nil, depth = 0, req = nil)
     req = Net::HTTP::Get.new(AtomURI.on_the_wire(@uri)) unless req
-    @authent.add_to req
     @last_error = nil
 
     if (depth > 10)
@@ -33,21 +20,14 @@ class Getter
     end
     
     begin
-      http = Net::HTTP.new(@uri.host, @uri.port)
-  
-      http.use_ssl = true if @uri.scheme == 'https'
-      http.set_debug_output @crumbs if @crumbs
+      http = prepare_http
      
       http.start do |connection|
         @response = connection.request(req)
+
+        return get(contentType, depth + 1, req) if need_authentication?(req)
         
         case @response
-        when Net::HTTPUnauthorized
-          if @authent && @response['WWW-Authenticate']            
-            @authent.add_to req, @response['WWW-Authenticate']
-            return get(contentType, depth + 1, req)
-          end
-          
         when Net::HTTPSuccess
           return getBody(contentType)
           
@@ -85,8 +65,5 @@ class Getter
     return true
   end
   
-  def header(key)
-    @response[key]
-  end
 end
 

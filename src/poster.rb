@@ -2,53 +2,36 @@
 #   Use is subject to license terms - see file "LICENSE"
 
 require 'net/http'
-require 'uri'
 require 'atomURI'
 require 'entry'
-require 'crumbs'
+require 'invoker'
 
-class Poster
+class Poster < Invoker
 
-  attr_reader :last_error, :response, :entry, :crumbs, :uri
+  attr_reader :entry, :uri
 
   def initialize(uriString, authent)
-    @last_error = nil
-    @uri = AtomURI.check(uriString)
-    @crumbs = Crumbs.new
-    if (@uri.class == String)
-      @last_error = @uri
-    end
-    @authent = authent
+    super uriString, authent
     @headers = {}
     @entry = nil
   end
-
-  def header(which)
-    @response[which]
-  end
-
+  
   def set_header(name, val)
     @headers[name] = val
   end
 
   def post(contentType, body, req = nil)
-    req = Net::HTTP::Post.new(AtomURI.on_the_wire(@uri)) unless req
-    @authent.add_to req
+    req = Net::HTTP::Post.new(AtomURI.on_the_wire(@uri)) if req.nil?
     req.set_content_type contentType
     @headers.each { |k, v| req[k]= v }
 
     begin
-      http = Net::HTTP.new(@uri.host, @uri.port)
-      http.use_ssl = true if @uri.scheme == 'https'
-      http.set_debug_output @crumbs if @crumbs
+      http = prepare_http
+      
       http.start do |connection|
         @response = connection.request(req, body)
-
-        if @response.kind_of?(Net::HTTPUnauthorized) && @authent
-           @authent.add_to req, @response['WWW-Authenticate']
-            return post(contentType, body, req)
-        end
         
+        return post(contentType, body, req) if need_authentication?(req)
         if @response.code != '201'
           @last_error = @response.message
           return false

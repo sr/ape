@@ -531,7 +531,7 @@ class Ape
     slug_re = %r{apix.?#{slug_num}}
     poster.set_header('Slug', slug)
 
-    poster.set_header('Slug', slug)
+    #poster.set_header('Slug', slug)
     worked = poster.post('image/jpeg', Samples.picture)
     save_dialog(name, poster)
     if !worked
