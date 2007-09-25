@@ -311,7 +311,8 @@ class Ape
     
     name = 'Updating mini-entry with PUT'
     sleep 2
-    unless putter.put(Names::AtomEntryMediaType, mini.gsub('Mini-1', 'Mini-4'))
+    updated = two_resp.body.gsub('Mini Two', 'Mini-4')
+    unless putter.put(Names::AtomEntryMediaType, updated)
       save_dialog(name, putter)
       error("Can't update mini-entry at #{link}", name)
       return
@@ -443,7 +444,7 @@ class Ape
 
     # * Check the entry from the feed
     check_new_entry(my_entry, from_feed, "Entry from collection feed")
-
+   
     edit_uri = new_entry.link('edit', self)
     if !edit_uri
       error "Entry from Location header has no edit link."

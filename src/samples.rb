@@ -661,10 +661,9 @@ END_OF_MINI_ENTRY
     e += " <id>#{make_id}</id>\n"
     updated = now.strftime("%Y-%m-%dT%H:%M:%S%z").sub /(..)$/, ':\1'
     e += " <updated>#{updated}</updated>\n"
-    summary = "Summary from the <APE> at #{updated}"
+    summary = "Summary from the &lt;b>&amp;lt;&amp;nbsp;APE&amp;nbsp;>&lt;/b> at #{updated}"
     e += " <link href='http://www.tbray.org/ape'/>"
-    e += " <summary type='html'>" + Escaper.escape(Escaper.escape(summary)) +
-      "</summary>\n"
+    e += " <summary type='html'>#{summary}</summary>\n"
     e += " <content type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>" +
       "<p>A test post from the &lt;APE&gt; at #{updated}</p>" +
       "<p>If you see this in an entry, it's probably a left-over from an " +
