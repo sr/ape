@@ -13,11 +13,7 @@ class Getter < Invoker
     req = Net::HTTP::Get.new(AtomURI.on_the_wire(@uri)) unless req
     @last_error = nil
 
-    if (depth > 10)
-      # too many redirects
-      @last_error = "Too many redirects"
-      return false
-    end
+    return false if document_failed?(depth, req)    
     
     begin
       http = prepare_http
@@ -45,6 +41,19 @@ class Getter < Invoker
       @last_error = "Can't connect to #{@uri.host} on port #{@uri.port}: #{$!}"
       return false
     end
+  end
+
+  def document_failed?(depth, req)
+    if (depth > 1 && need_authentication?(req))
+      @last_error = "Authentication is required"
+      return true
+    end
+    if (depth > 10)
+      # too many redirects
+      @last_error = "Too many redirects"
+      return true
+    end
+    return false
   end
 
   def getBody contentType
