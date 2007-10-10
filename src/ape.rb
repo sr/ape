@@ -686,6 +686,11 @@ class Ape
     worked = resource.get(content_type)
     @dialogs[name] = resource.crumbs if @dialogs
 
+    if (resource.security_warning and not @security_warning)
+      @security_warning = true
+      warning("Sending authentication information over a open channel is not a good security practice.", name)
+    end
+
     if !worked
       # oops, couldn't even get get it
       error("#{name} failed: " + resource.last_error, name) if report

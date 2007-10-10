@@ -7,7 +7,7 @@ require 'invoker'
 
 class Getter < Invoker
 
-  attr_reader :contentType, :charset, :body
+  attr_reader :contentType, :charset, :body, :security_warning
 
   def get(contentType = nil, depth = 0, req = nil)
     req = Net::HTTP::Get.new(AtomURI.on_the_wire(@uri)) unless req
@@ -21,7 +21,10 @@ class Getter < Invoker
       http.start do |connection|
         @response = connection.request(req)
 
-        return get(contentType, depth + 1, req) if need_authentication?(req)
+        if need_authentication?(req)
+          @security_warning = true unless http.use_ssl?
+          return get(contentType, depth + 1, req) 
+        end
         
         case @response
         when Net::HTTPSuccess
