@@ -46,14 +46,15 @@ class Getter < Invoker
     end
   end
 
-  def document_failed?(depth, req)
-    if (depth > 1 && need_authentication?(req))
-      @last_error = "Authentication is required"
-      return true
-    end
-    if (depth > 10)
-      # too many redirects
-      @last_error = "Too many redirects"
+  def document_failed?(depth, req)    
+    if (depth > 10)      
+      if need_authentication?(req)
+	#Authentication required
+        @last_error = "Authentication is required"
+      else
+	# too many redirects
+        @last_error = "Too many redirects"
+      end
       return true
     end
     return false
