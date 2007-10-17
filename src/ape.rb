@@ -373,7 +373,7 @@ class Ape
     poster.set_header('Slug', slug)
 
     # add some categories to the entry, and remember which
-    @cats = Categories.add_cats(my_entry, entry_collection, @authent)
+    @cats = Categories.add_cats(my_entry, entry_collection, @authent, self)
 
     # * OK, post it
     worked = poster.post(Names::AtomEntryMediaType, my_entry.to_s)

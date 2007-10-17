@@ -47,7 +47,7 @@ end
 #  at least one with fixed="no", also add a syntho-cat that we make up.
 #  Return the list of categories that we added.
 #
-def Categories.add_cats(entry, collection, authent)
+def Categories.add_cats(entry, collection, authent, ape=nil)
 
   added = []
   c = from_collection(collection, authent)
@@ -63,13 +63,22 @@ def Categories.add_cats(entry, collection, authent)
 
       # if it's fixed, pick the first one
       if cats.attributes['fixed'] == "yes"
-        cat = REXML::XPath.first(cats, './atom:category', Names::XmlNamespaces)
-        if cat
-          scheme = cat.attributes['scheme']
-          if !scheme
-            scheme = default_scheme
+        cat_list = REXML::XPath.match(cats, './atom:category', Names::XmlNamespaces)
+        if cat_list
+          mangled_warn = false
+          # for each <app:category> take the first one whose attribute "term" is not empty
+          cat_list.each do |cat|
+            unless cat.attributes['term'].empty?
+              scheme = cat.attributes['scheme']
+              if !scheme
+                scheme = default_scheme
+              end              
+              added << entry.add_category(cat.attributes['term'], scheme)
+              break
+            else
+              ape.warning 'A mangled category is present in your categories list' if ape and not mangled_warn
+            end
           end
-          added << entry.add_category(cat.attributes['term'], scheme)
         end
       else
         add_syntho = true
