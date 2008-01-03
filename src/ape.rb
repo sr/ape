@@ -209,8 +209,7 @@ class Ape
       end
       
       # next to godliness
-      link = from_feed.link('edit', self)      
-      Deleter.new(link, @authent).delete
+      delete_entry(from_feed)
       
       break if wanted.empty?
     end
@@ -261,8 +260,7 @@ class Ape
       end
     end    
 
-    link = entry.link('edit', self)      
-    Deleter.new(link, @authent).delete
+    delete_entry(entry)
     
     good "Published entry appears to be sanitized." if no_problem
   end
@@ -303,6 +301,10 @@ class Ape
     
     # let's update one of them; have to fetch it first to get the ETag
     link = two.link('edit', self)
+    unless link
+      error "Can't check entry without edit link, entry id: #{two.get_child('id/text()')}"
+      return
+    end
     two_resp = check_resource(link, 'fetch two', Names::AtomMediaType, false)
     etag = two_resp.header 'etag'
         
@@ -329,8 +331,7 @@ class Ape
       end
       
       # next to godliness
-      link = from_feed.link('edit', self)      
-      Deleter.new(link, @authent).delete
+      delete_entry(from_feed)
       
       break if wanted.empty?
     end
@@ -482,24 +483,7 @@ class Ape
     end
 
     # the edit-uri might have changed
-    edit_uri = from_feed.link('edit', self)
-    if !edit_uri
-      error "Entry in feed has no edit link."
-      return
-    end
-    
-    name = 'New Entry deletion'
-    deleter = Deleter.new(edit_uri, @authent)
-
-    worked = deleter.delete
-    save_dialog(name, deleter)
-    if worked
-      good("Entry deletion reported success.", name)
-    else
-      error("Couldn't delete the entry that was posted: " + deleter.last_error,
-        name)
-      return
-    end
+    return unless delete_entry(from_feed, 'New Entry deletion')
 
     # See if it's gone from the feed
     still_there = find_entry(collection_uri, "entry collection", entry_id)
@@ -589,22 +573,7 @@ class Ape
     end
 
     # * Delete the media link entry
-    edit_uri = media_link_entry.link('edit')
-    if !edit_uri
-      error "Media link entry has no edit link."
-      return
-    end
-
-    name = 'Deletion of media link entry'
-    deleter = Deleter.new(edit_uri, @authent)
-    worked = deleter.delete
-    save_dialog(name, deleter)
-    if worked
-      good("Media link entry deletion reported success.", name)
-    else
-      error("Couldn't delete media link entry.", name)
-      return
-    end
+    return unless delete_entry(media_link_entry, 'Deletion of media link entry')
 
     # * media link entry still in feed?
     still_there = find_entry(media_collection, "media collection", media_link_id)
@@ -994,6 +963,24 @@ class Ape
     when :info
       @w.img(:align => 'top', :src => '../ape/info.png')
     end
+  end
+  
+  def delete_entry(entry, name = nil)
+    link = entry.link('edit', self)
+    unless link
+      error "Can't delete entry without edit link"
+      return false
+    end
+    deleter = Deleter.new(link, @authent)
+    worked = deleter.delete
+    
+    save_dialog(name, deleter) if name
+    if worked
+      good("Entry deletion reported success.", name)
+    else
+      error("Couldn't delete the entry: " + deleter.last_error, name)
+    end
+    return worked
   end
 
 end
