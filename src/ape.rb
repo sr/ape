@@ -270,11 +270,10 @@ class Ape
     info "TESTING: Collection re-ordering after PUT."
     
     # We'll post three mini entries to the collection
-    mini = Samples.mini_entry
     poster = Poster.new(coll.href, @authent)
     ['One', 'Two', 'Three'].each do |num|
       sleep 2
-      text = mini.gsub('Mini-1', "Mini #{num}")
+      text = Samples.mini_entry.gsub('Mini-1', "Mini #{num}")
       name = "Posting Mini #{num}"
       worked = poster.post(Names::AtomEntryMediaType, text)
       save_dialog(name, poster)
