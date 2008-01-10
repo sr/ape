@@ -25,7 +25,8 @@ class Categories
         end
 
         if !getter.get('application/atomcat+xml')
-          ape.error "Can't fetch categories doc " + "'#{cats.attribute(:href).value}': getter.last_error" if ape
+          ape.error "Can't fetch categories doc " + 
+            "'#{cats.attribute(:href).value}': getter.last_error" if ape
           nil
         end
 
@@ -65,18 +66,18 @@ def Categories.add_cats(entry, collection, authent, ape=nil)
       if cats.attributes['fixed'] == "yes"
         cat_list = REXML::XPath.match(cats, './atom:category', Names::XmlNamespaces)
         if cat_list
-          mangled_warn = false
+
           # for each <app:category> take the first one whose attribute "term" is not empty
           cat_list.each do |cat|
-            unless cat.attributes['term'].empty?
+            if cat.attributes['term'].empty?
+              ape.warning 'A mangled category is present in your categories list' if ape
+            else
               scheme = cat.attributes['scheme']
               if !scheme
                 scheme = default_scheme
               end              
               added << entry.add_category(cat.attributes['term'], scheme)
               break
-            else
-              ape.warning 'A mangled category is present in your categories list' if ape and not mangled_warn
             end
           end
         end
