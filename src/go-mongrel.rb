@@ -9,7 +9,7 @@ require 'ape'
 class ApeHandler < Mongrel::HttpHandler
   def process(request, response)
     cgi = Mongrel::CGIWrapper.new(request, response)
-    puts "*****"+cgi['uri'].inspect
+    
     if !cgi['uri'] || (cgi['uri'] == '')
       response.start(200, true) do |header, body|
         HTML.error("URI argument is required", output=body)
@@ -17,7 +17,12 @@ class ApeHandler < Mongrel::HttpHandler
     end
 
     ape = Ape.new({ :crumbs => true, :output => 'html' })
-    ape.check(cgi['uri'])
+
+    if cgi['user'] && cgi['pass']
+      ape.check(cgi['uri'], cgi['user'], cgi['pass'])
+    else
+      ape.check(cgi['uri'])
+    end
 
     response.start(200, true) do |head, body|
       ape.report(output=body)
