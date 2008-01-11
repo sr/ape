@@ -818,7 +818,7 @@ class Ape
         if @footer then @w.p { @w.text! @footer } end
         @w.text! "\n"
 
-        if @dialogs
+        unless @dialog.nil?
           @w.h2 { @w.text! 'Recorded client/server dialogs' }
           @w.text! "\n"
           @diarefs.each do |k, v|
