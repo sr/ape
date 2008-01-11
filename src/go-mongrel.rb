@@ -16,7 +16,8 @@ class ApeHandler < Mongrel::HttpHandler
       end
     end
 
-    ape = Ape.new({ :crumbs => true, :output => 'html' })
+    format = request.params['HTTP_ACCEPT'] == 'text/plain' ? 'text' : 'html'
+    ape = Ape.new({ :crumbs => true, :output => format })
 
     if cgi['user'] && cgi['pass']
       ape.check(cgi['uri'], cgi['user'], cgi['pass'])
@@ -31,7 +32,7 @@ class ApeHandler < Mongrel::HttpHandler
 end
 
 h = Mongrel::HttpServer.new('0.0.0.0', 4000)
-#h.register('/', Mongrel::RedirectHandler.new('/ape/index.html'))
+h.register('/', Mongrel::RedirectHandler.new('/ape/index.html'))
 h.register('/ape', Mongrel::DirHandler.new(File.dirname(__FILE__) + '/layout', true))
 h.register('/atompub/go', ApeHandler.new)
 h.run.join
