@@ -31,7 +31,9 @@ class ApeHandler < Mongrel::HttpHandler
   end
 end
 
-h = Mongrel::HttpServer.new('0.0.0.0', 4000)
+port = ARGV.include?('-p') ? ARGV[ARGV.index('-p') + 1] : 4000
+
+h = Mongrel::HttpServer.new('0.0.0.0', port)
 h.register('/', Mongrel::RedirectHandler.new('/ape/index.html'))
 h.register('/ape', Mongrel::DirHandler.new(File.dirname(__FILE__) + '/layout', true))
 h.register('/atompub/go', ApeHandler.new)
