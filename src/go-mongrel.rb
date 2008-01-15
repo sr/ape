@@ -1,31 +1,30 @@
+#!/usr/bin/env ruby
 require 'rubygems'
 require 'mongrel'
-require 'mongrel/handlers'
-require 'mongrel/cgi'
-require 'cgi'
-require 'html'
 require 'ape'
 
 class ApeHandler < Mongrel::HttpHandler
   def process(request, response)
     cgi = Mongrel::CGIWrapper.new(request, response)
-    
-    if !cgi['uri'] || (cgi['uri'] == '')
+
+    uri  = cgi['uri'].strip
+    user = cgi['username'].strip
+    pass = cgi['password'].strip
+
+    if uri.empty?
       response.start(200, true) do |header, body|
-        HTML.error("URI argument is required", output=body)
+        header['Content-Type'] = 'text/plain'
+        body << 'URI argument is required'
       end
+      return
     end
 
     format = request.params['HTTP_ACCEPT'] == 'text/plain' ? 'text' : 'html'
     ape = Ape.new({ :crumbs => true, :output => format })
+    (user && pass) ? ape.check(uri, user, pass) : ape.check(uri)
 
-    if cgi['user'] && cgi['pass']
-      ape.check(cgi['uri'], cgi['user'], cgi['pass'])
-    else
-      ape.check(cgi['uri'])
-    end
-
-    response.start(200, true) do |head, body|
+    response.start(200, true) do |header, body|
+      header['Content-Type'] = 'text/html'
       ape.report(output=body)
     end
   end
