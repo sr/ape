@@ -30,9 +30,14 @@ class ApeHandler < Mongrel::HttpHandler
   end
 end
 
-port = ARGV.include?('-p') ? ARGV[ARGV.index('-p') + 1] : 4000
+$stdout.puts("=> Booting mongrel")
+host = '0.0.0.0'
+port = ARGV.include?('-p') && (ARGV.index('-p') + 1 < ARGV.size) ? ARGV[ARGV.index('-p') + 1] : 4000
 
-h = Mongrel::HttpServer.new('0.0.0.0', port)
+$stdout.puts("=> The ape starting on http://#{host}:#{port}")
+$stdout.puts("=> Ctrl-C to shutdown")
+
+h = Mongrel::HttpServer.new(host, port)
 h.register('/', Mongrel::RedirectHandler.new('/ape/index.html'))
 h.register('/ape', Mongrel::DirHandler.new(File.dirname(__FILE__) + '/layout', true))
 h.register('/atompub/go', ApeHandler.new)

@@ -32,6 +32,8 @@ class Poster < Invoker
         @response = connection.request(req, body)
         
         return post(contentType, body, req) if need_authentication?(req)
+        restart_authent_checker
+        
         if @response.code != '201'
           @last_error = @response.message
           return false

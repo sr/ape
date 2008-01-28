@@ -25,6 +25,7 @@ class Getter < Invoker
           @security_warning = true unless http.use_ssl?
           return get(contentType, depth + 1, req) 
         end
+        restart_authent_checker
         
         case @response
         when Net::HTTPSuccess

@@ -18,18 +18,22 @@ class AtomURI
   #  for xml:base 
   #
   def absolutize uri_s, context
-    uri = URI.parse uri_s
-    return uri_s if uri.absolute?
-    
-    path_base = @base
-    path_to(context).each do |node|
-      if (xb = node.attributes['xml:base'])
-        xb = URI.parse xb
-        if xb.absolute? then path_base = xb else path_base.merge! xb end
-      end
-    end
+    begin
+      uri = URI.parse uri_s
+      return uri_s if uri.absolute?
 
-    path_base.merge(uri).to_s
+      path_base = @base
+      path_to(context).each do |node|
+        if (xb = node.attributes['xml:base'])
+          xb = URI.parse xb
+          if xb.absolute? then path_base = xb else path_base.merge! xb end
+        end
+      end
+
+      return path_base.merge(uri).to_s
+    rescue URI::InvalidURIError
+      return nil
+    end
   end
 
   def path_to node

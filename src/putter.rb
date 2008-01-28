@@ -31,6 +31,7 @@ class Putter < Invoker
         @response = connection.request(req, body)
         
         return put(contentType, body, req) if need_authentication?(req)
+        restart_authent_checker
         
         unless @response.kind_of? Net::HTTPSuccess
           @last_error = @response.message

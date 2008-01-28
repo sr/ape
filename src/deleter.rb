@@ -17,6 +17,7 @@ class Deleter < Invoker
         @response = connection.request(req)
         
         return delete(req) if need_authentication?(req)
+        restart_authent_checker
         
         return true if @response.kind_of? Net::HTTPSuccess
 

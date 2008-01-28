@@ -53,6 +53,7 @@ class Ape
     rescue Exception
       error "Ouch! Ape fall down go boom; details: " +
         "#{$!}\n#{$!.class}\n#{$!.backtrace}"
+      puts $!.backtrace.join("\n")
     end
   end
 
@@ -305,22 +306,30 @@ class Ape
       return
     end
     two_resp = check_resource(link, 'fetch two', Names::AtomMediaType, false)
-    etag = two_resp.header 'etag'
-        
-    putter = Putter.new(link, @authent)
-    putter.set_header('If-Match', etag)
     
-    name = 'Updating mini-entry with PUT'
-    sleep 2
-    updated = two_resp.body.gsub('Mini Two', 'Mini-4')
-    unless putter.put(Names::AtomEntryMediaType, updated)
-      save_dialog(name, putter)
-      error("Can't update mini-entry at #{link}", name)
-      return
+    correctly_ordered = false
+    if two_resp
+      etag = two_resp.header 'etag'
+        
+      putter = Putter.new(link, @authent)
+      putter.set_header('If-Match', etag)
+    
+      name = 'Updating mini-entry with PUT'
+      sleep 2
+      updated = two_resp.body.gsub('Mini Two', 'Mini-4')
+      unless putter.put(Names::AtomEntryMediaType, updated)
+        save_dialog(name, putter)
+        error("Can't update mini-entry at #{link}", name)
+        return
+      end
+      # now the order should have changed
+      wanted = ['Mini One', 'Mini Three', 'Mini-4']
+      correctly_ordered = true
+    else
+      error "Mini Two entry not received. Can't assure the correct order after update."
+      wanted = ['Mini One', 'Mini Two', 'Mini Three']
     end
     
-    # now the order should have changed
-    wanted = ['Mini One', 'Mini Three', 'Mini-4']
     entries = Feed.read(coll.href, 'Entries post-update', self, true)
     entries.each do |from_feed|
       want = wanted.pop
@@ -334,8 +343,7 @@ class Ape
       
       break if wanted.empty?
     end
-    good "Entries correctly ordered after update of multi-post."
-    
+    good "Entries correctly ordered after update of multi-post."  if correctly_ordered
     
   end
 

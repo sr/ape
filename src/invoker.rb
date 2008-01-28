@@ -1,8 +1,9 @@
 #   Copyright © 2006 Sun Microsystems, Inc. All rights reserved
 #   Use is subject to license terms - see file "LICENSE"
 require 'net/https'
-require 'atomURI'
-require 'crumbs'
+require File.dirname(__FILE__) + '/atomURI'
+require File.dirname(__FILE__) + '/crumbs'
+require File.dirname(__FILE__) + '/authent'
 
 class Invoker
   
@@ -14,8 +15,9 @@ class Invoker
     @uri = AtomURI.check(uriString)
     if (@uri.class == String)
       @last_error = @uri
-    end
+    end   
     @authent = authent
+    @authent_checker = 0
   end
   
   def header(which)
@@ -33,13 +35,21 @@ class Invoker
   end
   
   def need_authentication?(req)
-    if @response.instance_of?(Net::HTTPUnauthorized) && @authent       
-       @authent.add_to req, header('WWW-Authenticate')
-       #clean the request body attribute, if we don't do it http.request(req, body) will raise an exception
-       req.body = nil unless req.body.nil?
-       return true
+    if @response.instance_of?(Net::HTTPUnauthorized) && @authent
+      #tries to authenticate just two times in order to avoid infinite loops
+      raise AuthenticationError, 'Authentication is required' unless @authent_checker <= 1
+      @authent_checker += 1
+      
+      @authent.add_to req, header('WWW-Authenticate')
+      #clean the request body attribute, if we don't do it http.request(req, body) will raise an exception
+      req.body = nil unless req.body.nil?
+      return true
     end
     return false 
+  end
+  
+  def restart_authent_checker
+    @authent_checker = 0
   end
   
 end
