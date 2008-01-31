@@ -1,7 +1,14 @@
+$:.unshift File.dirname(__FILE__)
+$:.unshift(File.join(File.dirname(__FILE__), %w[.. lib]))
+
 require 'test/unit'
-require File.dirname(__FILE__) + '/../src/atomURI'
-require File.dirname(__FILE__) + '/../src/authent'
-require File.dirname(__FILE__) + '/../src/invoker'
+require 'ape'
+
+def load_test_dir(dir)
+  Dir[File.join(File.dirname(__FILE__), dir, "*.rb")].each do |file|
+    require file
+  end
+end
 
 module Writer
   def response=(response)
@@ -9,4 +16,4 @@ module Writer
   end
 end
 
-Invoker.send(:include, Writer)
+Ape::Invoker.send(:include, Writer)

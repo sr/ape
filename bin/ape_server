@@ -1,0 +1,8 @@
+
+$:.unshift(File.join(File.dirname(__FILE__), %w[.. lib]))
+
+require 'rubygems'
+require 'mongrel'
+require 'ape/ape_server'
+
+Ape::ApeServer.new(ARGV).run

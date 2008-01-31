@@ -2,11 +2,11 @@ require File.dirname(__FILE__) + '/../test_helper.rb'
 
 class AuthentTest < Test::Unit::TestCase
   def setup
-    @authent = Authent.new('david', 'my secret password')
+    @authent = Ape::Authent.new('david', 'my secret password')
   end
   
   def test_assert_raise_auth_error
-    assert_raise(AuthenticationError) { load_plugin("Oauth") }
+    assert_raise(Ape::AuthenticationError) { load_plugin("Oauth") }
   end
   
   def test_assert_load_wsse_plugin
