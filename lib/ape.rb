@@ -1,6 +1,7 @@
 #   Copyright © 2006 Sun Microsystems, Inc. All rights reserved
 #   Use is subject to license terms - see file "LICENSE"
 $:.unshift File.dirname(__FILE__)
+
 require 'rubygems'
 require 'rexml/document'
 require 'builder'

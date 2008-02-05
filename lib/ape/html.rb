@@ -11,7 +11,7 @@ module Ape
   <body>
   <h2>Error</h2>
   <p>#{message}.</p>
-  EndOfText
+EndOfText
     end
   end
 end
