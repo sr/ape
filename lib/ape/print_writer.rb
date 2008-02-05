@@ -5,19 +5,17 @@
 #  out of HttpResponse.getWriter
 
 module Ape
-class Printwriter
+  class Printwriter
+    def initialize(java_writer)
+      @w = java_writer
+    end
 
-  def initialize(java_writer)
-    @w = java_writer
+    def puts(s)
+      @w.println s 
+    end
+
+    def << (s)
+      @w.print s
+    end
   end
-
-  def puts(s)
-    @w.println s 
-  end
-
-  def << (s)
-    @w.print s
-  end
-
-end
 end

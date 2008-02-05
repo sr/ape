@@ -1,24 +1,23 @@
 #   Copyright © 2006 Sun Microsystems, Inc. All rights reserved
 #   Use is subject to license terms - see file "LICENSE"
-
 require 'rexml/xpath'
 require 'date'
 require 'base64'
 
 module Ape
-class Samples
+  class Samples
 
-  def Samples.foreign_child
-    'subject'
-  end
-  def Samples.foreign_namespace
-    Names::DcNamespace
-  end
-  def Samples.foreign_child_content
-    'Simians'
-  end
-    
-  def Samples.service_RNC
+    def Samples.foreign_child
+      'subject'
+    end
+    def Samples.foreign_namespace
+      Names::DcNamespace
+    end
+    def Samples.foreign_child_content
+      'Simians'
+    end
+      
+    def Samples.service_RNC
     return <<END_OF_SERVICE_SCHEMA
 # -*- rnc -*-
 # RELAX NG Compact Syntax Grammar for the Atom Protocol
@@ -626,19 +625,18 @@ xhtmlDiv = element xhtml:div {
 
 # EOF
 END_OF_ATOM_SCHEMA
+    end
 
-  end
-
-  def Samples.make_id
-    id = ''
-    5.times { id += rand(1000000).to_s }
-    "tag:tbray.org,2005:#{id}"
-  end 
-  
-  
-  def Samples.mini_entry
-    now = DateTime::now
-    return <<END_OF_MINI_ENTRY
+    def Samples.make_id
+      id = ''
+      5.times { id += rand(1000000).to_s }
+      "tag:tbray.org,2005:#{id}"
+    end 
+    
+    
+    def Samples.mini_entry
+      now = DateTime::now
+      return <<END_OF_MINI_ENTRY
 <?xml version="1.0" ?>
 <entry xmlns="http://www.w3.org/2005/Atom">
   <title>Entry Mini-1</title>
@@ -648,62 +646,62 @@ END_OF_ATOM_SCHEMA
   <content>Content of Mini-1</content>
 </entry>
 END_OF_MINI_ENTRY
-  end
+    end
 
-  def Samples.basic_entry
-    e = '<?xml version="1.0" ?>'
-    e += '<entry xmlns="http://www.w3.org/2005/Atom">' + "\n"
-    e += ' <title>' + Escaper.escape('From the <APE> (サル)') + "</title>\n"
-    e += " <author><name>The Atom Protocol Exerciser</name></author>\n"
-    now = DateTime::now
-    e += " <id>#{make_id}</id>\n"
-    updated = now.strftime("%Y-%m-%dT%H:%M:%S%z").sub(/(..)$/, ':\1')
-    e += " <updated>#{updated}</updated>\n"
-    summary = "Summary from the &lt;b>&amp;lt;&amp;nbsp;APE&amp;nbsp;>&lt;/b> at #{updated}"
-    e += " <link href='http://www.tbray.org/ape'/>"
-    e += " <summary type='html'>#{summary}</summary>\n"
-    e += " <content type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>" +
-      "<p>A test post from the &lt;APE&gt; at #{updated}</p>" +
-      "<p>If you see this in an entry, it's probably a left-over from an " +
-      "unsuccessful Ape run; feel free to delete it.</p>" +
-      "</div></content>\n"
+    def Samples.basic_entry
+      e = '<?xml version="1.0" ?>'
+      e += '<entry xmlns="http://www.w3.org/2005/Atom">' + "\n"
+      e += ' <title>' + Escaper.escape('From the <APE> (サル)') + "</title>\n"
+      e += " <author><name>The Atom Protocol Exerciser</name></author>\n"
+      now = DateTime::now
+      e += " <id>#{make_id}</id>\n"
+      updated = now.strftime("%Y-%m-%dT%H:%M:%S%z").sub(/(..)$/, ':\1')
+      e += " <updated>#{updated}</updated>\n"
+      summary = "Summary from the &lt;b>&amp;lt;&amp;nbsp;APE&amp;nbsp;>&lt;/b> at #{updated}"
+      e += " <link href='http://www.tbray.org/ape'/>"
+      e += " <summary type='html'>#{summary}</summary>\n"
+      e += " <content type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>" +
+        "<p>A test post from the &lt;APE&gt; at #{updated}</p>" +
+        "<p>If you see this in an entry, it's probably a left-over from an " +
+        "unsuccessful Ape run; feel free to delete it.</p>" +
+        "</div></content>\n"
+      
+      e += " <dc:subject xmlns:dc='#{Names::DcNamespace}'>Simians</dc:subject>\n"
+      e += "</entry>\n"
+      return e
+    end
     
-    e += " <dc:subject xmlns:dc='#{Names::DcNamespace}'>Simians</dc:subject>\n"
-    e += "</entry>\n"
-    return e
-  end
-  
-  def Samples.unclean_xhtml_entry
-    e = '<?xml version="1.0" ?>'
-    e += '<entry xmlns="http://www.w3.org/2005/Atom">' + "\n"
-    e +=  "<title>Unclean!</title>"
-    e += " <author><name>The Atom Protocol Exerciser</name></author>\n"
-    now = DateTime::now
-    e += " <id>#{make_id}</id>\n"
-    updated = now.strftime("%Y-%m-%dT%H:%M:%S%z").sub(/(..)$/, ':\1')
-    e += " <updated>#{updated}</updated>\n"
-    e += " <summary type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>"
-    e += "<p>hey</p><script src='http://www.example.com/xxx' /> "
-    e += "<script>alert('XXX')</script>"
-    e += "<p id='x1' background=\"javascript:alert('XSS')\">Hey</p></div></summary>\n"
-    e +=   "<content type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>"
-    e +=   "<p id='x2' style='...whatever...'>OK</p><object>No No No</object>"
-    e +=   "<a href='/no-problemo'>aah</a><a href='javascript:evil'>ouch</a>"
-    e +=   "</div></content></entry>"
-  end
+    def Samples.unclean_xhtml_entry
+      e = '<?xml version="1.0" ?>'
+      e += '<entry xmlns="http://www.w3.org/2005/Atom">' + "\n"
+      e +=  "<title>Unclean!</title>"
+      e += " <author><name>The Atom Protocol Exerciser</name></author>\n"
+      now = DateTime::now
+      e += " <id>#{make_id}</id>\n"
+      updated = now.strftime("%Y-%m-%dT%H:%M:%S%z").sub(/(..)$/, ':\1')
+      e += " <updated>#{updated}</updated>\n"
+      e += " <summary type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>"
+      e += "<p>hey</p><script src='http://www.example.com/xxx' /> "
+      e += "<script>alert('XXX')</script>"
+      e += "<p id='x1' background=\"javascript:alert('XSS')\">Hey</p></div></summary>\n"
+      e +=   "<content type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>"
+      e +=   "<p id='x2' style='...whatever...'>OK</p><object>No No No</object>"
+      e +=   "<a href='/no-problemo'>aah</a><a href='javascript:evil'>ouch</a>"
+      e +=   "</div></content></entry>"
+    end
 
-  def Samples.cat_test_entry
-    e = retitled_entry('Testing category posting')
-  end
+    def Samples.cat_test_entry
+      e = retitled_entry('Testing category posting')
+    end
 
-  def Samples.retitled_entry(new_title, new_id = nil)
-    e = basic_entry
-    e.gsub!(/<title>.*<\/title>/, "<title>#{new_title}</title>")
-    new_id = make_id unless new_id
-    e.gsub(/<id>.*<\/id>/, "<id>#{new_id}</id>")
-  end
+    def Samples.retitled_entry(new_title, new_id = nil)
+      e = basic_entry
+      e.gsub!(/<title>.*<\/title>/, "<title>#{new_title}</title>")
+      new_id = make_id unless new_id
+      e.gsub(/<id>.*<\/id>/, "<id>#{new_id}</id>")
+    end
 
-  def Samples.picture
+    def Samples.picture
     b64 =<<END_OF_PICTURE
     /9j/4AAQSkZJRgABAQEASABIAAD/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQE
     BQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/
@@ -755,8 +753,7 @@ END_OF_MINI_ENTRY
     001+n/Dk41B8ZaFmx8oyx6UVVn1m5jRCGXOMfdorRU2lqvx/4BhPFzlK6lb5
     I//Z
 END_OF_PICTURE
-    Base64.decode64(b64)
+      Base64.decode64(b64)
+    end
   end
-
-end
 end

@@ -7,34 +7,33 @@
 #  of the dialog.
 #
 module Ape
-class Crumbs
-
-  def initialize
-    @crumbs = []
-    @keep_next = false
-  end
-
-  def grep(pattern)
-    @crumbs.grep(pattern)
-  end
-
-  def << data
-    if @keep_next
-      @crumbs << "> #{data}"
+  class Crumbs
+    def initialize
+      @crumbs = []
       @keep_next = false
-    elsif data =~ /^->/
-      @crumbs << "< #{data.gsub(/^.../, '')}"
-    elsif data =~ /^<-/
-      @keep_next = true
+    end
+
+    def grep(pattern)
+      @crumbs.grep(pattern)
+    end
+
+    def << data
+      if @keep_next
+        @crumbs << "> #{data}"
+        @keep_next = false
+      elsif data =~ /^->/
+        @crumbs << "< #{data.gsub(/^.../, '')}"
+      elsif data =~ /^<-/
+        @keep_next = true
+      end
+    end
+
+    def each
+      @crumbs.each { |c| yield c }
+    end
+
+    def to_s
+      "  " + @crumbs.join("...\n")
     end
   end
-
-  def each
-    @crumbs.each { |c| yield c }
-  end
-
-  def to_s
-    "  " + @crumbs.join("...\n")
-  end
-end
 end

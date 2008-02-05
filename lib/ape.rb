@@ -976,7 +976,6 @@ module Ape
       end
       return worked
     end
-
   end
 end
 
