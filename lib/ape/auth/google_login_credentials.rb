@@ -18,7 +18,7 @@ module Ape
       "AccountDisabled" =>    "The user account has been disabled.",
       "ServiceDisabled" =>    "The user's access to the specified service has been disabled. (The user account may still be valid.)",
       "ServiceUnavailable" => "The service is not available; try again later.",
-    }
+    } unless defined?(GOOGLE_ERROR_MESSAGES)
     
     def initialize
       @credentials = nil
