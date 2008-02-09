@@ -1,10 +1,9 @@
-require 'rubygems'
-
-VERSION = '1.0.0'
+require File.dirname(__FILE__) + '/lib/ape/version'
 
 begin
+  require 'rubygems'
   require 'echoe'
-  Echoe.new('ape', VERSION) do |p|
+  Echoe.new('ape', Ape::VERSION::STRING) do |p|
     p.rubyforge_name = 'ape'
     p.summary = 'A tool to exercice AtomPub server.'
     p.url = 'http://www.tbray.org/ongoing/misc/Software#p-4' 
