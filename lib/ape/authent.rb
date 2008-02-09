@@ -38,3 +38,5 @@ module Ape
     end
   end
 end
+
+Dir[File.dirname(__FILE__) + '/auth/*.rb'].each { |l| require l }
