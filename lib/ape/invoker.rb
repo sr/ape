@@ -3,7 +3,7 @@
 require 'net/https'
 
 module Ape
-  class Invoker    
+  class Invoker
     attr_reader :last_error, :crumbs, :response
     
     def initialize(uriString, authent)
@@ -50,3 +50,5 @@ module Ape
     end  
   end
 end
+
+Dir[File.dirname(__FILE__) + '/invokers/*.rb'].each { |l| require l }
