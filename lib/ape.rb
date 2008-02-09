@@ -6,7 +6,7 @@ require 'rubygems'
 require 'rexml/document'
 require 'builder'
 
-Dir[File.dirname(__FILE__) + '/ape/**/*.rb'].each { |l| require l }
+Dir[File.dirname(__FILE__) + '/ape/*.rb'].each { |l| require l }
 
 module Ape
   class Ape
