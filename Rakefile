@@ -10,6 +10,7 @@ begin
     p.author = 'Tim Bray'
     p.email = 'tim.bray@sun.com'
     p.extra_deps = ['mongrel >=1.1.3']
+    p.test_pattern = 'test/unit/*.rb'
   end
 rescue LoadError => boom
   puts 'You are missing a dependency required for meta-operations on this gem.'
