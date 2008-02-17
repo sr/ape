@@ -1,8 +1,8 @@
-APE stands for Atom Protocol Exerciser, and that’s what it does. It’s written in Ruby, and is 
+APE stands for Atom Protocol Exerciser, and that's what it does. It's written in Ruby, and is 
 designed to run on the Web, with a nice HTML interface describing its interactions with the 
 APP server under test. 
   
-== Licence
+== License
 
 Copyright © 2006 Sun Microsystems, Inc. All rights reserved
 Use is subject to license terms - see file "LICENSE"
