@@ -3,7 +3,16 @@ require 'mongrel'
 require 'ape/handler'
 
 module Ape
+  
+  # Manages and initializes the Mongrel handler. See run for more details.
   class Server
+    
+    # Starts the Mongrel handler with options given in +options+ and
+    # maps the <b>/</b>, <b>/ape</b> and <b>/atompub/go</b> URIs to handlers.
+    #
+    # ==== Options
+    #  * :host - the IP address to bind to
+    #  * :port - the port number to listen on
     def self.run(options)      
       mongrel = Mongrel::Configurator.new(:host => options[:host], :port => options[:port]) do
         log "=> Booting mongrel"
