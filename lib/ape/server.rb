@@ -1,10 +1,13 @@
 require 'rubygems'
 require 'mongrel'
 require 'ape/handler'
+require 'ape/samples'
 
 module Ape
   class Server
     def self.run(options)      
+      Samples.home = options[:home]
+      
       mongrel = Mongrel::Configurator.new(:host => options[:host], :port => options[:port]) do
         log "=> Booting mongrel"
         begin

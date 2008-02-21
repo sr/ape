@@ -7,6 +7,18 @@ class SamplesTest < Test::Unit::TestCase
     assert_equal('/Users/david/.ape', Ape::Samples.ape_home)
   end
   
+  def test_load_service_schema
+    assert_not_nil(Ape::Samples.service_RNC)
+  end
+  
+  def test_load_categories_schema
+    assert_not_nil(Ape::Samples.categories_RNC)
+  end
+  
+  def test_load_atom_schema
+    assert_not_nil(Ape::Samples.atom_RNC)    
+  end
+  
   def test_load_mini_entry
     doc = REXML::Document.new(Ape::Samples.mini_entry)
     assert_not_nil(REXML::XPath.first(doc.root, './id'))
