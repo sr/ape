@@ -4,7 +4,7 @@ require 'rexml/document'
 class SamplesTest < Test::Unit::TestCase
   
   def test_ape_home
-    assert_equal('/Users/david/.ape', Ape::Samples.ape_home)
+    assert_equal('/Users/david/.ape', Ape::Samples.home)
   end
   
   def test_load_service_schema

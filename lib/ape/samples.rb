@@ -58,8 +58,8 @@ module Ape
           "/"
   end
   
-  def Samples.ape_home
-    @@home || ENV["APE_HOME"] || File.join(Samples.home_directory,".ape")
+  def Samples.home
+    @@home || ENV["APE_HOME"] || File.join(home_directory,".ape")
   end
   
     def Samples.make_id
@@ -69,8 +69,8 @@ module Ape
     end
     
     def Samples.entry_path(type)
-      File.exist?(File.join(ape_home, "/#{type}.eruby"))?
-        File.join(ape_home, "/#{type}.eruby") :
+      File.exist?(File.join(home, "/#{type}.eruby"))?
+        File.join(home, "/#{type}.eruby") :
         File.join(File.dirname(__FILE__), "/samples/#{type}.eruby")
     end
     

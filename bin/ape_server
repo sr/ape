@@ -20,7 +20,7 @@ parser = OptionParser.new do |opts|
   opts.separator ''
   opts.on('-a', '--address ADDRESS', 'Address to bind to', "default: #{OPTIONS[:host]}") { |v| OPTIONS[:host] = v }
   opts.on('-p', '--port PORT', 'Port to bind to', "default: #{OPTIONS[:port]}") { |v| OPTIONS[:port] = v }
-  opts.on('-d', '--directory DIRECTORY', 'ape home directory', "default: #{Ape::Samples.ape_home}") { |v| OPTIONS[:home] = v }
+  opts.on('-d', '--directory DIRECTORY', 'ape home directory', "default: #{Ape::Samples.home}") { |v| OPTIONS[:home] = v }
   opts.on('-h', '--help', 'Displays this help') { puts opts; exit }
   opts.parse!(ARGV)
 end
