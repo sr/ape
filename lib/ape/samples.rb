@@ -627,6 +627,8 @@ xhtmlDiv = element xhtml:div {
 END_OF_ATOM_SCHEMA
     end
 
+require 'erubis'
+
   #recipe from cap
   def Samples.home_directory
       ENV["HOME"] ||
@@ -642,63 +644,49 @@ END_OF_ATOM_SCHEMA
       id = ''
       5.times { id += rand(1000000).to_s }
       "tag:tbray.org,2005:#{id}"
-    end 
+    end
+    
+    def Samples.entry_path(type)
+      File.exist?(File.join(ape_home, "/#{type}.eruby"))?
+        File.join(ape_home, "/#{type}.eruby") :
+        File.join(File.dirname(__FILE__), "/samples/#{type}.eruby")
+    end
+    
+    def Samples.load_template(type)
+      entry_path = entry_path(type)
+      input = File.read(entry_path)
+      eruby = Erubis::Eruby.new(input)
+    end
     
     
     def Samples.mini_entry
-      now = DateTime::now
-      return <<END_OF_MINI_ENTRY
-<?xml version="1.0" ?>
-<entry xmlns="http://www.w3.org/2005/Atom">
-  <title>Entry Mini-1</title>
-  <author><name>EM</name></author>
-  <id>#{make_id}</id>
-  <updated>#{now.strftime("%Y-%m-%dT%H:%M:%S%z").sub(/(..)$/, ':\1')}</updated>
-  <content>Content of Mini-1</content>
-</entry>
-END_OF_MINI_ENTRY
+      eruby = load_template('mini_entry')
+      
+      now = DateTime::now.strftime("%Y-%m-%dT%H:%M:%S%z").sub(/(..)$/, ':\1')
+      id = make_id
+      
+      eruby.result(binding())
     end
 
     def Samples.basic_entry
-      e = '<?xml version="1.0" ?>'
-      e += '<entry xmlns="http://www.w3.org/2005/Atom">' + "\n"
-      e += ' <title>' + Escaper.escape('From the <APE> (サル)') + "</title>\n"
-      e += " <author><name>The Atom Protocol Exerciser</name></author>\n"
-      now = DateTime::now
-      e += " <id>#{make_id}</id>\n"
-      updated = now.strftime("%Y-%m-%dT%H:%M:%S%z").sub(/(..)$/, ':\1')
-      e += " <updated>#{updated}</updated>\n"
-      summary = "Summary from the &lt;b>&amp;lt;&amp;nbsp;APE&amp;nbsp;>&lt;/b> at #{updated}"
-      e += " <link href='http://www.tbray.org/ape'/>"
-      e += " <summary type='html'>#{summary}</summary>\n"
-      e += " <content type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>" +
-        "<p>A test post from the &lt;APE&gt; at #{updated}</p>" +
-        "<p>If you see this in an entry, it's probably a left-over from an " +
-        "unsuccessful Ape run; feel free to delete it.</p>" +
-        "</div></content>\n"
+      eruby = load_template('basic_entry')
       
-      e += " <dc:subject xmlns:dc='#{Names::DcNamespace}'>Simians</dc:subject>\n"
-      e += "</entry>\n"
-      return e
+      id = make_id
+      now = DateTime::now.strftime("%Y-%m-%dT%H:%M:%S%z").sub(/(..)$/, ':\1')
+      title = Escaper.escape('From the <APE> (サル)')
+      summary = "Summary from the &lt;b>&amp;lt;&amp;nbsp;APE&amp;nbsp;>&lt;/b> at #{now}"
+      subject = Names::DcNamespace
+      
+      eruby.result(binding())
     end
     
     def Samples.unclean_xhtml_entry
-      e = '<?xml version="1.0" ?>'
-      e += '<entry xmlns="http://www.w3.org/2005/Atom">' + "\n"
-      e +=  "<title>Unclean!</title>"
-      e += " <author><name>The Atom Protocol Exerciser</name></author>\n"
-      now = DateTime::now
-      e += " <id>#{make_id}</id>\n"
-      updated = now.strftime("%Y-%m-%dT%H:%M:%S%z").sub(/(..)$/, ':\1')
-      e += " <updated>#{updated}</updated>\n"
-      e += " <summary type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>"
-      e += "<p>hey</p><script src='http://www.example.com/xxx' /> "
-      e += "<script>alert('XXX')</script>"
-      e += "<p id='x1' background=\"javascript:alert('XSS')\">Hey</p></div></summary>\n"
-      e +=   "<content type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>"
-      e +=   "<p id='x2' style='...whatever...'>OK</p><object>No No No</object>"
-      e +=   "<a href='/no-problemo'>aah</a><a href='javascript:evil'>ouch</a>"
-      e +=   "</div></content></entry>"
+      eruby = load_template('unclean_xhtml_entry')
+      
+      id = make_id
+      now = DateTime::now.strftime("%Y-%m-%dT%H:%M:%S%z").sub(/(..)$/, ':\1')
+      
+      eruby.result(binding())
     end
 
     def Samples.cat_test_entry

@@ -9,8 +9,8 @@ begin
     p.url = 'http://www.tbray.org/ongoing/misc/Software#p-4' 
     p.author = 'Tim Bray'
     p.email = 'tim.bray@sun.com'
-    p.dependencies << 'builder >=2.1.2'
-    p.extra_deps = ['mongrel >=1.1.3']
+    p.dependencies << 'builder >= 2.1.2'
+    p.extra_deps = ['mongrel >= 1.1.3', 'erubis >= 2.5.0']
     p.test_pattern = 'test/unit/*.rb'
   end
 rescue LoadError => boom

@@ -1,0 +1,21 @@
+<?xml version="1.0" ?>
+<entry xmlns="http://www.w3.org/2005/Atom">
+  <title>Unclean!</title>
+  <author><name>The Atom Protocol Exerciser</name></author>
+  <id><%= id %></id>
+  <updated><%= now %></updated>
+  <summary type='xhtml'>
+    <div xmlns='http://www.w3.org/1999/xhtml'>
+    <p>hey</p>
+    <script src='http://www.example.com/xxx' />
+    <script>alert('XXX')</script>
+    <p id='x1' background="javascript:alert('XSS')">Hey</p>
+    </div>
+  </summary>
+  <content type='xhtml'>
+    <div xmlns='http://www.w3.org/1999/xhtml'>
+    <p id='x2' style='...whatever...'>OK</p><object>No No No</object>
+    <a href='/no-problemo'>aah</a><a href='javascript:evil'>ouch</a>
+    </div>
+  </content>
+</entry>
