@@ -627,6 +627,17 @@ xhtmlDiv = element xhtml:div {
 END_OF_ATOM_SCHEMA
     end
 
+  #recipe from cap
+  def Samples.home_directory
+      ENV["HOME"] ||
+          (ENV["HOMEPATH"] && "#{ENV["HOMEDRIVE"]}#{ENV["HOMEPATH"]}") ||
+          "/"
+  end
+  
+  def Samples.ape_home
+    ENV["APE_HOME"] || File.join(Samples.home_directory,".ape")
+  end
+  
     def Samples.make_id
       id = ''
       5.times { id += rand(1000000).to_s }
