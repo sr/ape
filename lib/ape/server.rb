@@ -1,6 +1,7 @@
 require 'rubygems'
 require 'mongrel'
 require 'ape/handler'
+require 'ape/samples'
 
 module Ape
   
@@ -14,6 +15,8 @@ module Ape
     #  * :host - the IP address to bind to
     #  * :port - the port number to listen on
     def self.run(options)      
+      Samples.home = options[:home]
+      
       mongrel = Mongrel::Configurator.new(:host => options[:host], :port => options[:port]) do
         log "=> Booting mongrel"
         begin
