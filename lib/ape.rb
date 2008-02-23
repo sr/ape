@@ -1,5 +1,5 @@
-#   Copyright © 2006 Sun Microsystems, Inc. All rights reserved
-#   Use is subject to license terms - see file "LICENSE"
+#   Copyright (c) 2006 Sun Microsystems, Inc. All rights reserved
+#   See the included LICENSE[link:/files/LICENSE.html] file for details.
 $:.unshift File.dirname(__FILE__)
 
 require 'rubygems'
@@ -10,6 +10,13 @@ Dir[File.dirname(__FILE__) + '/ape/*.rb'].each { |l| require l }
 
 module Ape
   class Ape
+    
+    # Creates an Ape instance with options given in the +args+ Hash.
+    #
+    # ==== Options
+    #   * :crumbs - boolean value
+    #   * :output - one of 'text' or 'html'. #report will output in this format. Defaults to 'html'.
+    #   * :debug  - enables debug information at each step in the output
     def initialize(args)
       @dialogs = (args[:crumbs]) ? {} : []
       output = args[:output] || 'html'
@@ -28,11 +35,18 @@ module Ape
       @errors = @warnings = 0
     end
 
-    # Args: APP URI, username/password, preferred entry/media collections
+    # Checks the AtomPub server at +uri+ for sanity.
+    #
+    # ==== Options
+    #   * uri - the URI of the AtomPub server. Required.
+    #   * username - an optional username for authentication
+    #   * password - if a username is provided, a password is required. See Ape::Authent for more information.
+    #   * requested_e_coll - a preferred entry collection to check
+    #   * requested_m_coll - a preferred media collection to check 
     def check(uri, username=nil, password=nil,
         requested_e_coll = nil, requested_m_coll = nil)
 
-      # Google athent weirdness
+      # Google authent weirdness
       @authent = Authent.new(username, password)
       header(uri)
       begin
@@ -671,6 +685,10 @@ module Ape
       return resource
     end
 
+    # Sets the header for the report
+    #
+    # ==== Options
+    #  * uri - The URI of the service document. Required.
     def header(uri)
       @header = "APP Service doc: #{uri}"
     end

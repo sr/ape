@@ -3,7 +3,14 @@ require 'mongrel'
 require 'ape'
 
 module Ape
+  
+  # Implements the APE application handler for processing
+  # and responding to requests. See process for more detail.
   class Handler < Mongrel::HttpHandler
+    
+    # Called by Mongrel with Mongrel::HttpRequest and
+    # Mongrel::HttpResponse objects. Creates an Ape
+    # instance for the request and responds with its report.
     def process(request, response)
       cgi = Mongrel::CGIWrapper.new(request, response)
 

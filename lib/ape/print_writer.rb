@@ -1,10 +1,8 @@
-#   Copyright © 2006 Sun Microsystems, Inc. All rights reserved
-#   Use is subject to license terms - see file "LICENSE"
-
-# this is a wrapper for the weird derived-from-PrintWriter class that comes
-#  out of HttpResponse.getWriter
-
+# Copyright (c) 2006 Sun Microsystems, Inc. All rights reserved
+# See the included LICENSE[link:/files/LICENSE.html] file for details.
 module Ape
+  # this is a wrapper for the weird derived-from-PrintWriter class that comes
+  # out of HttpResponse.getWriter
   class Printwriter
     def initialize(java_writer)
       @w = java_writer
