@@ -729,6 +729,10 @@ module Ape
       step "G" + message
     end
 
+    # Outputs an informational +message+, prepended by an "I"
+    #
+    # ==== Options
+    #  * message - The message to be output. Required.
     def info(message)
       step "I" + message
     end
