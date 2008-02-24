@@ -3,9 +3,18 @@
 require 'uri'
 
 module Ape
+  # Represents an Atom URI and encapsulates Atom-specific URI helpers.
   class AtomURI
 
-    def initialize base_uri
+    # call-seq:
+    #   AtomURI.new('http://...') => object
+    #   AtomURI.new(uri) => object
+    #
+    # Creates a new instance using +base_uri+.
+    #
+    # ==== Options
+    #  * base_uri - a URI string or object. If a string is passed, URI.parse is used for conversion. Required.
+    def initialize(base_uri)
       if base_uri.kind_of? URI
         @base = base_uri
       else
@@ -13,11 +22,14 @@ module Ape
       end
     end
 
-    # Given a URI pulled out of the middle of an XML doc ('context' provides
-    #  containing element) absolutize it if it's relative, with proper regard
-    #  for xml:base 
+    # Given a URI string from an XML document and its containing element,
+    # absolutize it if it's relative, with proper regard for xml:base. 
+    # Returns the absolute URI, or nil on failure.
     #
-    def absolutize uri_s, context
+    # ==== Options
+    #   * uri_s   - The URI string to be made absolute. Required.
+    #   * context - The containing element, inside which uri_s is found. Required.
+    def absolutize(uri_s, context)
       begin
         uri = URI.parse uri_s
         return uri_s if uri.absolute?
@@ -36,7 +48,15 @@ module Ape
       end
     end
 
-    def path_to node
+    # call-seq:
+    #   path_to(element) => array
+    #
+    # Returns an array containing each successive element in the path from
+    # the root node to +element+.
+    #
+    # ==== Options
+    #   * element - The REXML::Element object to path-find.
+    def path_to(node)
       if node.class == REXML::Element
         path_to(node.parent) << node
       else
@@ -44,6 +64,14 @@ module Ape
       end
     end
     
+    # call-seq:
+    #   AtomURI.check('http://...') => string
+    #
+    # Validates that +uri_string+ is well-formed and uses a supported scheme.
+    # Returns +uri_string+ if successful or an error message on failure.
+    #
+    # ==== Options
+    #   * uri_string - A URI string or object to check for correctness. Required.
     def AtomURI.check(uri_string)
       if uri_string.kind_of? URI
         uri = uri_string
@@ -62,7 +90,14 @@ module Ape
       end
     end
 
-    def AtomURI.on_the_wire uri
+    # call-seq:
+    #   AtomURI.on_the_wire(uri) => string
+    #
+    # Returns +uri+ in the proper format for Net::HTTPRequest and friends.
+    #
+    # ==== Options
+    #   * uri - a URI object (*not* a string). Required.
+    def AtomURI.on_the_wire(uri)
       if uri.query
         "#{uri.path}?#{uri.query}"
       else
