@@ -7,7 +7,7 @@ describe 'When testing entry POSTing' do
   before(:each) do
     @validator = Ape::Validator::EntryPosting
     @options = {:host => 'localhost', :port => '80'}
-    @reporter = mock('Ape::Reporter', :call => true)
+    @reporter = mock('Ape::Reporter', :call => 1)
     @validator.stub!(:reporter).and_return(@reporter)
   end
 
@@ -88,9 +88,9 @@ describe 'When testing entry POSTing' do
   end
 
   it 'should report an error if the creation of the new entry isnt successful' do
-    #response_for(:unsuccessful_posting) do
-    #  @reporter.should_receive(:call).with(@validator, :error, /Can't post new entry/)
-    #end
+    @response.stub!(:code).and_return(500)
+    @reporter.should_receive(:call).with(@validator, :error, /Can't post new entry/)
+    do_validate
   end
 end
 __END__
