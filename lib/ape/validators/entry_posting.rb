@@ -14,9 +14,9 @@ module Ape
         reporter.call(self, :notice, 'Posting new entry.')
         return unless do_request
         reporter.call(self, :error, "Can't post new entry.") unless @response.code == 201
-        unless @response['Location']
-          reporter.call(self, :error, 'No Location header upon POST creation.')
-        end
+        # TODO: Yeah, there is a problem here. It'll continue to test even if there is no Location header
+        reporter.call(self, :error, 'No Location header upon POST creation.') unless @response['Location']
+        reporter.call(self, :notice, "Posting of new entry to the Entries collection reported success, Location: #{@response['Location']}")
       end
 
       private

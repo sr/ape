@@ -6,7 +6,7 @@ describe 'When testing entry POSTing' do
   end
 
   def successful_response
-    [201, {'Location' => '/entries/1'}, [Ape::Samples.basic_entry.to_s]]
+    [201, {'Location' => 'http://test.host/entries/1'}, [Ape::Samples.basic_entry.to_s]]
   end
 
   def response_for(what)
@@ -85,6 +85,12 @@ describe 'When testing entry POSTing' do
 
     it 'should notify we are trying to post a new entry' do
       @reporter.should_receive(:call).with(@validator, :notice, 'Posting new entry.')
+      do_validate
+    end
+
+    it "should notify that the entry was successfuly posted and report it's Location" do
+      @reporter.should_receive(:call).with(@validator, :notice,
+        "Posting of new entry to the Entries collection reported success, Location: http://test.host/entries/1")
       do_validate
     end
   end
