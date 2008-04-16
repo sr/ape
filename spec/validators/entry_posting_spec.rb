@@ -93,10 +93,9 @@ describe 'When testing entry POSTing' do
       do_validate
     end
   end
-end
-__END__
+
   describe 'Errors reporting' do
-    it "should report an error if creation of the new entry isn't successful" do
+    it "should report an error if creation of the new entry isn't successfull (aka response code is not 201)" do
       @response.stub!(:code).and_return(500)
       @reporter.should_receive(:call).with(@validator, :error, "Can't post new entry.")
       do_validate
@@ -106,9 +105,9 @@ __END__
       @response.should_receive(:[]).with('Location').and_return(nil)
       @reporter.should_receive(:call).with(@validator, :error, 'No Location header upon POST creation.')
       do_validate
-      end
     end
-  enn
+  end
+
   it 'should report unacceptable URI' # I don't undertand what that mean
 end
 __END__
