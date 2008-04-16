@@ -85,6 +85,14 @@ describe 'When testing entry POSTing' do
       do_validate
     end
   end
+
+  describe 'Fatal errors reporting' do
+    it "should report that we can't connect to the given address" do
+      @http.should_receive(:request).and_raise(SocketError)
+      @reporter.should_receive(:call).with(@validator, :fatal, "Can't connect to test.host on port 80.")
+      do_validate
+    end
+  end
 end
 __END__
   describe 'Errors reporting' do
@@ -100,15 +108,7 @@ __END__
       do_validate
       end
     end
-
-  describe 'Fatal errors reporting' do
-    it "should report that we can't connect to the given address" do
-      @http.should_receive(:start).and_raise(SocketError)
-      @reporter.should_receive(:call).with(@validator, :fatal, "Can't connect to test.host on port 80.")
-      do_validate
-    end
-  end
-
+  enn
   it 'should report unacceptable URI' # I don't undertand what that mean
 end
 __END__

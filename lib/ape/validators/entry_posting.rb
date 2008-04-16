@@ -12,7 +12,7 @@ module Ape
       def run(options={})
         reporter.call(self, :notice, 'Testing entry-posting basics.')
         reporter.call(self, :notice, 'Posting new entry.')
-        do_request
+        return unless do_request
         reporter.call(self, :error, "Can't post new entry.") unless @response.code == 201
       end
 
@@ -23,7 +23,8 @@ module Ape
           request.set_content_type 'application/atom+xml;type=entry'
           @response = http.request(request, Ape::Samples.basic_entry.to_s)
         rescue SocketError
-          reporter.call(self, :fatal, "Can't connect to #{host} on port #{port}.")
+          reporter.call(self, :fatal, "Can't connect to #{@host} on port #{@port}.")
+          false
         end
     end
   end
