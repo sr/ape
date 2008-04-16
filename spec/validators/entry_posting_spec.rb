@@ -71,7 +71,7 @@ describe 'When testing entry POSTing' do
     end
   end
 
-  describe 'Notifications' do
+  describe 'Notifices reporting' do
     it 'should notify we are testing basic entry-posting features' do
       @reporter.should_receive(:call).with(@validator, :notice, 'Testing entry-posting basics.')
       do_validate
@@ -83,15 +83,15 @@ describe 'When testing entry POSTing' do
     end
   end
 
-  describe 'Errors' do
-    it 'should report an error if the creation of the new entry isnt successful' do
+  describe 'Errors reporting' do
+    it "should report an error if creation of the new entry isn't successful" do
       @response.stub!(:code).and_return(500)
-      @reporter.should_receive(:call).with(@validator, :error, /Can't post new entry/)
+      @reporter.should_receive(:call).with(@validator, :error, "Can't post new entry.")
       do_validate
     end
   end
 
-  describe 'Fatal errors' do
+  describe 'Fatal errors reporting' do
     it "should report that we can't connect to the given address" do
       @http.should_receive(:start).and_raise(SocketError)
       @reporter.should_receive(:call).with(@validator, :fatal, "Can't connect to test.host on port 80.")
