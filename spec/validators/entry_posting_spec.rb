@@ -5,9 +5,9 @@ require File.dirname(__FILE__) + '/../../lib/ape/validators/entry_posting'
 
 describe 'When testing entry POSTing' do
   before(:each) do
-    @validator = Ape::Validator::EntryPosting
-    @options = {:host => 'localhost', :port => '80'}
+    @options = {:host => 'test.host', :port => '80', :collection => '/entries'}
     @reporter = mock('Ape::Reporter', :call => 1)
+    @validator = Ape::Validator::EntryPosting.new(@options)
     @validator.stub!(:reporter).and_return(@reporter)
   end
 
@@ -34,21 +34,19 @@ describe 'When testing entry POSTing' do
   end
 
   def do_validate
-    @validator.run(:host => 'test.host', :port => '80', :collection => '/entries')
-  end
-
-  before(:each) do
-    @http = mock('Net::HTTP')
-    @connection = mock('Net::HTTP connection')
-    @request = mock('Net::HTTP::Post', :set_content_type => 1)
-    @response = mock('Net::HTTP::Response', :code => 201)
-    @http.stub!(:start).and_yield(@connection)
-    @connection.stub!(:request).and_return(@response)
-    Net::HTTP.stub!(:new).and_return(@http)
-    Net::HTTP::Post.stub!(:new).and_return(@request)
+    @validator.run
   end
 
   describe 'The POST request' do
+    before(:each) do
+      @http = mock('Net::HTTP')
+      @request = mock('Net::HTTP::Post', :set_content_type => 1)
+      @response = mock('Net::HTTP::Response', :code => 201)
+      @http.stub!(:request).and_return(@response)
+      Net::HTTP.stub!(:new).and_return(@http)
+      Net::HTTP::Post.stub!(:new).and_return(@request)
+    end
+
     it 'should connect to the server with given options' do
       Net::HTTP.should_receive(:new).with('test.host', '80').and_return(@http)
       do_validate
@@ -59,18 +57,18 @@ describe 'When testing entry POSTing' do
       do_validate
     end
 
-    it 'should assigns correct Content-Type header to the request' do
+    it 'should perform POST request with right  Content-Type header' do
       @request.should_receive(:set_content_type).with('application/atom+xml;type=entry')
       do_validate
     end
 
-    it 'should perform POST the right sample' do
-      @http.should_receive(:start).and_yield(@connection)
-      @connection.should_receive(:request).with(@request, Ape::Samples.basic_entry.to_s).and_return(@response)
+    it 'should perform POST request with the right sample as its body' do
+      @http.should_receive(:request).with(@request, Ape::Samples.basic_entry.to_s).and_return(@response)
       do_validate
     end
   end
-
+end
+__END__
   describe 'Notifices reporting' do
     it 'should notify we are testing basic entry-posting features' do
       @reporter.should_receive(:call).with(@validator, :notice, 'Testing entry-posting basics.')
@@ -89,7 +87,13 @@ describe 'When testing entry POSTing' do
       @reporter.should_receive(:call).with(@validator, :error, "Can't post new entry.")
       do_validate
     end
-  end
+
+    it 'should report an error if there is no Location header in the response' do
+      @response.should_receive(:[]).with('Location').and_return(nil)
+      @reporter.should_receive(:call).with(@validator, :error, 'No Location header upon POST creation.')
+      do_validate
+      end
+    end
 
   describe 'Fatal errors reporting' do
     it "should report that we can't connect to the given address" do
