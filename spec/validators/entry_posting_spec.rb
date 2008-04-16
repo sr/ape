@@ -1,15 +1,14 @@
 require File.dirname(__FILE__) + '/../spec_helper'
 
 describe 'When testing entry POSTing' do
-  before(:each) do
-    @options = {:host => 'test.host', :port => '80', :collection => '/entries'}
-    @reporter = mock('Ape::Reporter', :call => 1)
-    @validator = Ape::Validator::EntryPosting.new(@options)
-    @validator.stub!(:reporter).and_return(@reporter)
+  def do_validate
+    @validator.run
   end
 
   def response_for(what)
     response = case what
+    when :successful
+      [201, {'Location' => '/entries/1'}, [Ape::Samples.basic_entry.to_s]]
     when :unsuccessful_posting
       [500, {}, ['']] 
     when :location_header
@@ -17,11 +16,20 @@ describe 'When testing entry POSTing' do
     when :no_location_header
       [201, {}, ['']]
     else
-      [200, {}, ['']]
+      raise ArgumentError
     end 
     app = lambda { |env| response }
     env = Rack::MockRequest.env_for(uri='/entries', :method => 'POST')
     Rack::MockResponse.new(*app.call(env))
+  end
+
+  def set_response!(response)
+    @response = response_for(response)
+    @http.stub!(:request).and_return(@response)
+  end
+
+  def with_response!(response)
+    set_response!(response)
     yield
     do_validate
   end
@@ -30,20 +38,21 @@ describe 'When testing entry POSTing' do
     [201, {'Location' => 'foo'}, ['entry with correct id, link[@rel="edit"]']]
   end
 
-  def do_validate
-    @validator.run
+  before(:each) do
+    @options = {:host => 'test.host', :port => '80', :collection => '/entries'}
+    @reporter = mock('Ape::Reporter', :call => 1)
+    @validator = Ape::Validator::EntryPosting.new(@options)
+    @validator.stub!(:reporter).and_return(@reporter)
+
+    @http = mock('Net::HTTP')
+    @request = mock('Net::HTTP::Post', :set_content_type => 1)
+    Net::HTTP.stub!(:new).and_return(@http)
+    Net::HTTP::Post.stub!(:new).and_return(@request)
+
+    set_response!(:successful)
   end
 
   describe 'The POST request' do
-    before(:each) do
-      @http = mock('Net::HTTP')
-      @request = mock('Net::HTTP::Post', :set_content_type => 1)
-      @response = mock('Net::HTTP::Response', :code => 201)
-      @http.stub!(:request).and_return(@response)
-      Net::HTTP.stub!(:new).and_return(@http)
-      Net::HTTP::Post.stub!(:new).and_return(@request)
-    end
-
     it 'should connect to the server with given options' do
       Net::HTTP.should_receive(:new).with('test.host', '80').and_return(@http)
       do_validate
@@ -64,8 +73,7 @@ describe 'When testing entry POSTing' do
       do_validate
     end
   end
-end
-__END__
+
   describe 'Notifices reporting' do
     it 'should notify we are testing basic entry-posting features' do
       @reporter.should_receive(:call).with(@validator, :notice, 'Testing entry-posting basics.')
@@ -77,7 +85,8 @@ __END__
       do_validate
     end
   end
-
+end
+__END__
   describe 'Errors reporting' do
     it "should report an error if creation of the new entry isn't successful" do
       @response.stub!(:code).and_return(500)
