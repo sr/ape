@@ -1,7 +1,4 @@
-require 'rubygems'
-require 'rack/mock'
-require File.dirname(__FILE__) + '/../../lib/ape/samples'
-require File.dirname(__FILE__) + '/../../lib/ape/validators/entry_posting'
+require File.dirname(__FILE__) + '/../spec_helper'
 
 describe 'When testing entry POSTing' do
   before(:each) do
