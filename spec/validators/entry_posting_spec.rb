@@ -5,16 +5,21 @@ describe 'When testing entry POSTing' do
     @validator.run
   end
 
+  def successful_response
+    [201, {'Location' => '/entries/1'}, [Ape::Samples.basic_entry.to_s]]
+  end
+
   def response_for(what)
     response = case what
     when :successful
-      [201, {'Location' => '/entries/1'}, [Ape::Samples.basic_entry.to_s]]
+      successful_response
     when :unsuccessful_posting
       [500, {}, ['']] 
-    when :location_header
-      [201, {'Location' => 'http://localhost/1'}, ['']]
     when :no_location_header
-      [201, {}, ['']]
+      # TODO: err, there must be a non-ugly way to do that
+      r = successful_response
+      r[1].reject! { |k, v| k == 'Location' }
+      r
     else
       raise ArgumentError
     end 
@@ -28,7 +33,7 @@ describe 'When testing entry POSTing' do
     @http.stub!(:request).and_return(@response)
   end
 
-  def with_response!(response)
+  def with_response(response)
     set_response!(response)
     yield
     do_validate
@@ -98,9 +103,9 @@ describe 'When testing entry POSTing' do
     end
 
     it 'should report an error if there is no Location header in the response' do
-      @response.should_receive(:[]).with('Location').and_return(nil)
-      @reporter.should_receive(:call).with(@validator, :error, 'No Location header upon POST creation.')
-      do_validate
+      with_response(:no_location_header) do
+        @reporter.should_receive(:call).with(@validator, :error, 'No Location header upon POST creation.')
+      end
     end
   end
 
