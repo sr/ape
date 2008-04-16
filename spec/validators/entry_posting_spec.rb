@@ -34,10 +34,6 @@ describe 'When testing entry POSTing' do
     do_validate
   end
   
-  def correct_response
-    [201, {'Location' => 'foo'}, ['entry with correct id, link[@rel="edit"]']]
-  end
-
   before(:each) do
     @options = {:host => 'test.host', :port => '80', :collection => '/entries'}
     @reporter = mock('Ape::Reporter', :call => 1)
