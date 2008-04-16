@@ -13,8 +13,10 @@ describe 'When testing entry POSTing' do
     response = case what
     when :successful
       successful_response
-    when :unsuccessful_posting
-      [500, {}, ['']] 
+    when :unsuccessful
+      r = successful_response
+      r[0] = 500
+      r
     when :no_location_header
       # TODO: err, there must be a non-ugly way to do that
       r = successful_response
@@ -97,9 +99,9 @@ describe 'When testing entry POSTing' do
 
   describe 'Errors reporting' do
     it "should report an error if creation of the new entry isn't successfull (aka response code is not 201)" do
-      @response.stub!(:code).and_return(500)
-      @reporter.should_receive(:call).with(@validator, :error, "Can't post new entry.")
-      do_validate
+      with_response(:unsuccessful) do
+        @reporter.should_receive(:call).with(@validator, :error, "Can't post new entry.")
+      end
     end
 
     it 'should report an error if there is no Location header in the response' do
