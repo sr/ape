@@ -1,7 +1,11 @@
 require File.dirname(__FILE__) + '/../spec_helper'
 
+# TODO: 
+# - custom matchers for notify, error
+# - spec that `run` exit on error
+#
 describe 'When testing entry POSTing' do
-  include EntryPostingValidatorHelper
+  include EntryPostingValidatorHelpers
 
   before(:each) do
     @options = {:host => 'test.host', :port => '80', :collection => '/entries'}

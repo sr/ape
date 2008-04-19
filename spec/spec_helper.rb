@@ -11,7 +11,7 @@ class Rack::MockResponse
   alias :code :status
 end
 
-module EntryPostingValidatorHelper
+module EntryPostingValidatorHelpers
   def do_validate
     @validator.run
   end
