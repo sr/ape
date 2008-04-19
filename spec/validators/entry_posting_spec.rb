@@ -2,8 +2,6 @@ require File.dirname(__FILE__) + '/../spec_helper'
 
 # TODO: 
 # - custom matchers for notify, error
-# - spec that `run` exit on error
-#
 describe 'When testing entry POSTing' do
   include EntryPostingValidatorHelpers
 
@@ -84,20 +82,4 @@ describe 'When testing entry POSTing' do
   end
 
   it 'should report unacceptable URI' # I don't undertand what that mean
-end
-__END__
-  it 'should report there was not return Location header in response' do
-    response_without(:header) do
-      @report.should_receive(:call).with(@validator, :error, 'No Location header upon POST creation')
-      do_validate
-    end
-  end
-
-  it "should report that POSTing was successful and display entry's Location header" do
-    response_with(:header) do
-      @report.should_receive(:call).with(@validator, :success, "Posting of new entry to the Entries collection \
-        was successful. Entry's Location: /foo")
-      do_validate
-    end
-  end
 end
