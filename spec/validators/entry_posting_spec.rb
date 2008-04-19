@@ -65,21 +65,21 @@ describe 'When testing entry POSTing' do
     it "should report that we can't connect to the given address" do
       @http.should_receive(:request).and_raise(SocketError)
       @reporter.should_receive(:call).with(@validator, :fatal, "Can't connect to test.host on port 80.")
-      do_validate
+      do_validate.should be_false
     end
   end
 
   describe 'Errors reporting' do
     it "should report an error if creation of the new entry isn't successfull (aka response code is not 201)" do
       with_response(:unsuccessful) do
-        @reporter.should_receive(:call).with(@validator, :error, "Can't post new entry.")
-      end
+        @validator.reporter.should_receive(:call).with(@validator, :error, "Can't post new entry.")
+      end.should be_false
     end
 
     it 'should report an error if there is no Location header in the response' do
       with_response(:no_location_header) do
         @reporter.should_receive(:call).with(@validator, :error, 'No Location header upon POST creation.')
-      end
+      end.should be_false
     end
   end
 
