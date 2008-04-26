@@ -1,0 +1,33 @@
+APE test various things...
+
+Entry posting
+=============
+- After a post, entries appears into the feed
+- The URI is acceptable (TODO: I don't why what does that mean)
+- The POST request is successful
+  - Response code == 201
+  - Content-type is correct
+  - Response body contains a valid Atom entry
+- When the entry has ben successfuly POSTed:
+  - Returned entries (in content-type) is the same as the one we posted
+  - Categories are still in the entry
+  - Check that foreign markup survived (dc:subject)
+- When testing returned Location, it checks that:
+  - The header exists
+  - The URI is accessible
+  - correct Media-type
+- When testing entries as returned in Location header, it checks that:
+  - Entry is well formed
+  - The slug we provided was used
+  - Categories are still in the entry
+  - Foreign markup is preserved (dc:subject)
+- When testing feed, it checks that:
+  - The new entry show-up into it
+  - Entry has an link[@rel='edit'] link
+- When doing an in-place update using PUT:
+  - It put a modified version of entry we posted earlier and checks that:
+    - Entry in feed have been modified
+    - PUT is successful (201)
+    - TODO: other stuff that I am too lazy to understand right now
+- When DELETEing posted entry, it checks that:
+  - Entry no more appears into the feed

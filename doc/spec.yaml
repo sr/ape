@@ -1,9 +1,0 @@
-test_entry_posts:
-- info "TESTING: Entry-posting basics"
-- display "Now in the entry feed" fellowed by list of entries
-- ? Unnacceptable URI
-- info "Pasting new entry"
-- error "Can't POST new entry" if code != 201 || wrong content-type || broken entry || cant http.start raise smthg
-- Location headeer
-- 
-
