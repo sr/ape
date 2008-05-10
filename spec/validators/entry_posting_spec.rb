@@ -92,5 +92,7 @@ describe 'When testing entry POSTing' do
         @validator.reporter.should_receive(:call).with(@validator, :error, 'Incorrect Content-Type.')
       end
     end
+
+    it "should report an error if the returned entry isn't valid"
   end
 end
