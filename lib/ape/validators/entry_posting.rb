@@ -10,12 +10,22 @@ module Ape
       end
 
       def run(options={})
-        reporter.call(self, :notice, 'Testing entry-posting basics.')
-        reporter.call(self, :notice, 'Posting new entry.')
+        notify 'Testing entry-posting basics.'
+        notify 'Posting new entry.'
         return false unless do_request
-        reporter.call(self, :error, "Can't post new entry."); return false unless @response.code == 201
-        reporter.call(self, :error, 'No Location header upon POST creation.'); return false unless @response['Location']
-        reporter.call(self, :notice, "Posting of new entry to the Entries collection reported success, Location: #{@response['Location']}")
+
+        unless @response.code == 201
+          error "Can't post new entry."
+          return false
+        end
+
+        unless @response['Location']
+          error 'No Location header upon POST creation.'
+          return false
+        end
+
+        notify "Posting of new entry to the Entries collection reported success," + \
+          "Location: #{@response['Location']}"
       end
 
       private
@@ -27,6 +37,14 @@ module Ape
         rescue SocketError
           reporter.call(self, :fatal, "Can't connect to #{@host} on port #{@port}.")
           false
+        end
+
+        def notify(message)
+          reporter.call(self, :notice, message)
+        end
+
+        def error(message)
+          reporter.call(self, :error, message)
         end
     end
   end
