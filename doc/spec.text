@@ -3,17 +3,17 @@ APE test various things...
 Entry posting
 =============
 - After a post, entries appears into the feed
-- The URI is acceptable (TODO: I don't why what does that mean)
+- The URI is acceptable (TODO: I don't know what does that mean)
 - The POST request is successful
-  - Response code == 201
-  - Content-type is correct
+  - DONE: Response code == 201
+  - DONE: Content-type is correct
   - Response body contains a valid Atom entry
 - When the entry has ben successfuly POSTed:
   - Returned entries (in content-type) is the same as the one we posted
   - Categories are still in the entry
   - Check that foreign markup survived (dc:subject)
 - When testing returned Location, it checks that:
-  - The header exists
+  - DONE: The header exists
   - The URI is accessible
   - correct Media-type
 - When testing entries as returned in Location header, it checks that:
