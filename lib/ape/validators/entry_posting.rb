@@ -24,6 +24,10 @@ module Ape
           return false
         end
 
+        unless @response['Content-Type'] == 'application/atom+xml;type=entry'
+          error 'Incorrect Content-Type.'
+        end
+
         notify "Posting of new entry to the Entries collection reported success," + \
           "Location: #{@response['Location']}"
       end

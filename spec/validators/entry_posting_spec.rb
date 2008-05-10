@@ -80,5 +80,17 @@ describe 'When testing entry POSTing' do
         @reporter.should_receive(:call).with(@validator, :error, 'No Location header upon POST creation.')
       end.should be_false
     end
+
+    it 'should report an error if there is no Content-Type' do
+      with_response(:no_content_type) do
+        @validator.reporter.should_receive(:call).with(@validator, :error, 'Incorrect Content-Type.')
+      end
+    end
+
+    it 'should report an error if the returned Content-Type is incorrect' do
+      with_response(:incorrect_content_type) do
+        @validator.reporter.should_receive(:call).with(@validator, :error, 'Incorrect Content-Type.')
+      end
+    end
   end
 end

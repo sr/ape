@@ -20,7 +20,10 @@ module EntryPostingValidatorHelpers
   end
 
   def successful_response
-    [201, {'Location' => 'http://test.host/entries/1'}, [Ape::Samples.basic_entry.to_s]]
+    [201, {
+      'Location'      => 'http://test.host/entries/1',
+      'Content-Type'  => 'application/atom+xml;type=entry'
+    }, [Ape::Samples.basic_entry.to_s]]
   end
 
   def response_for(what)
@@ -35,6 +38,14 @@ module EntryPostingValidatorHelpers
       # TODO: err, there must be a non-ugly way to do that
       r = successful_response
       r[1].reject! { |k, v| k == 'Location' }
+      r
+    when :incorrect_content_type
+      r = successful_response
+      r[1] = r[1].update('Content-Type' => 'application/xml')
+      r
+    when :no_content_type
+      r = successful_response
+      r[1].reject! { |k, v| k == 'Content-Type' }
       r
     else
       raise ArgumentError
