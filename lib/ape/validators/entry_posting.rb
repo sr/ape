@@ -30,6 +30,7 @@ module Ape
 
         notify "Posting of new entry to the Entries collection reported success," + \
           "Location: #{@response['Location']}"
+        notify 'Examining the new entry as returned in the POST response'
       end
 
       private

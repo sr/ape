@@ -96,10 +96,16 @@ describe 'When testing entry POSTing' do
     it "should report an error if the returned entry isn't valid"
   end
 
-  describe 'When examining the returned entry (as returned in the body)' do
+  describe 'When examining the returned entry (as returned in the POST response)' do
     it 'should notify we are examining the returned entry' do
       should_report(:notice, 'Examining the new entry as returned in the POST response')
       do_validate
+    end
+
+    it "should report an error if the returned entry isn't valid" do
+      with_response(:not_well_formed_entry) do
+        should_report(:error, 'New entry is not well-formed')
+      end.should be_false
     end
 
     it "should report an error if the returned entry isn't the same as the one we posted"
