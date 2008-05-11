@@ -54,7 +54,7 @@ describe 'When testing entry POSTing' do
     end
 
     it 'should report a fatal error' do
-      @reporter.should_receive(:call).with(@validator, :fatal, "Can't connect to test.host on port 80.")
+      should_report(:fatal, "Can't connect to test.host on port 80.")
       do_validate
     end
 
@@ -65,31 +65,31 @@ describe 'When testing entry POSTing' do
 
   describe 'When posting the entry' do
     it 'should notify we are trying to post a new entry' do
-      @reporter.should_receive(:call).with(@validator, :notice, 'Posting new entry.')
+      should_report(:notice, 'Posting new entry.')
       do_validate
     end
 
     it "should report an error and end the validation process if creation of the new entry isn't successfull" do
       with_response(:unsuccessful) do
-        @validator.reporter.should_receive(:call).with(@validator, :error, "Can't post new entry.")
+        should_report(:error, "Can't post new entry.")
       end.should be_false
     end
 
     it 'should report an error and end the validation process if there is no Location header in the response' do
       with_response(:no_location_header) do
-        @reporter.should_receive(:call).with(@validator, :error, 'No Location header upon POST creation.')
+        should_report(:error, 'No Location header upon POST creation.')
       end.should be_false
     end
 
     it 'should report an error if there is no Content-Type' do
       with_response(:no_content_type) do
-        @validator.reporter.should_receive(:call).with(@validator, :error, 'Incorrect Content-Type.')
+        should_report(:error, 'Incorrect Content-Type.')
       end
     end
 
     it 'should report an error if the returned Content-Type is incorrect' do
       with_response(:incorrect_content_type) do
-        @validator.reporter.should_receive(:call).with(@validator, :error, 'Incorrect Content-Type.')
+        should_report(:error, 'Incorrect Content-Type.')
       end
     end
 
