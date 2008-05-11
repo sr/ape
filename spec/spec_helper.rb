@@ -14,6 +14,14 @@ class Rack::MockResponse
   alias :code :status
 end
 
+# http://blog.moertel.com/articles/2007/02/07/ruby-1-9-gets-handy-new-method-object-tap
+class Object
+  def tap
+    yield(self)
+    self
+  end
+end
+
 module EntryPostingValidatorHelpers
   def do_validate
     @validator.run
@@ -31,22 +39,19 @@ module EntryPostingValidatorHelpers
     when :successful
       successful_response
     when :unsuccessful
-      r = successful_response
-      r[0] = 500
-      r
+      successful_response.tap { |response| response[0] = 500 }
     when :no_location_header
-      # TODO: err, there must be a non-ugly way to do that
-      r = successful_response
-      r[1].reject! { |k, v| k == 'Location' }
-      r
+      successful_response.tap do |response|
+        response[1].reject! { |k, v| k == 'Location' }
+      end
     when :incorrect_content_type
-      r = successful_response
-      r[1] = r[1].update('Content-Type' => 'application/xml')
-      r
+      successful_response.tap do |response|
+        response[1].update('Content-Type' => 'application/xml')
+      end
     when :no_content_type
-      r = successful_response
-      r[1].reject! { |k, v| k == 'Content-Type' }
-      r
+      successful_response.tap do |response|
+        response[1].reject! { |k, v| k == 'Content-Type' }
+      end
     else
       raise ArgumentError
     end 
