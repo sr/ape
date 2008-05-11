@@ -31,6 +31,11 @@ module Ape
         notify "Posting of new entry to the Entries collection reported success," + \
           "Location: #{@response['Location']}"
         notify 'Examining the new entry as returned in the POST response'
+
+        unless valid_entry?(@response.body)
+          error 'New entry is not well-formed'
+          return false
+        end
       end
 
       private
@@ -42,6 +47,14 @@ module Ape
         rescue SocketError
           reporter.call(self, :fatal, "Can't connect to #{@host} on port #{@port}.")
           false
+        end
+
+        def valid_entry?(entry)
+          Atom::Entry.parse(entry)
+        rescue Atom::ParseError
+          false
+        else
+          true
         end
 
         def notify(message)

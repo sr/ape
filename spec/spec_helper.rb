@@ -52,6 +52,10 @@ module EntryPostingValidatorHelpers
       successful_response.tap do |response|
         response[1].reject! { |k, v| k == 'Content-Type' }
       end
+    when :not_well_formed_entry
+      successful_response.tap do |response|
+        response.last[0] = '<fooo><bar>'
+      end
     else
       raise ArgumentError
     end 

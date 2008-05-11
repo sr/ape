@@ -102,7 +102,7 @@ describe 'When testing entry POSTing' do
       do_validate
     end
 
-    it "should report an error if the returned entry isn't valid" do
+    it "should report an error and end the validation if the returned entry isn't valid" do
       with_response(:not_well_formed_entry) do
         should_report(:error, 'New entry is not well-formed')
       end.should be_false
