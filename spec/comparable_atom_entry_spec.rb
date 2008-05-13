@@ -3,6 +3,7 @@ require File.dirname(__FILE__) + '/../lib/ape/comparable_atom_entry'
 
 describe ComparableAtomEntry do
   before(:each) do
+
     @entry = Atom::Entry.new.tap do |e|
       e.title = 'Keep Ya Head Up'
       e.summary = 'nice song'
@@ -53,8 +54,8 @@ describe ComparableAtomEntry do
       ComparableAtomEntry.compare(@entry, @entry).different_elements.should be_empty
     end
 
-    it 'should not have different types' do
-      ComparableAtomEntry.compare(@entry, @entry).different_types.should be_empty
+    it 'should not have different element types' do
+      ComparableAtomEntry.compare(@entry, @entry).different_element_types.should be_empty
     end
   end
 
@@ -62,34 +63,35 @@ describe ComparableAtomEntry do
     describe 'with missing elements' do
       before(:each) do
         @entry_with_missing_elements = Atom::Entry.new.tap do |e|
-          e.title = 'Skandalouz'
+          e.title = 'Keep Ya Head Up'
         end
+        @comparison = ComparableAtomEntry.compare(@entry, @entry_with_missing_elements)
       end
 
       it 'should be different' do
-        ComparableAtomEntry.compare(@entry, @entry_with_missing_elements).should be_different
+        @comparison.should be_different
       end
 
       it 'should not be the same' do
-        ComparableAtomEntry.compare(@entry, @entry_with_missing_elements).should_not be_same
+        @comparison.should_not be_same
       end
 
       it 'should have missing elements' do
-        ComparableAtomEntry.compare(@entry, @entry_with_missing_elements).should have(2).missing_elements
+        @comparison.should have(2).missing_elements
       end
 
       it 'should be missing content' do
-        ComparableAtomEntry.compare(@entry, @entry_with_missing_elements).missing_elements.should include(:content)
+        @comparison.missing_elements.should include(:content)
       end
 
       it 'should be missing summary' do
-        ComparableAtomEntry.compare(@entry, @entry_with_missing_elements).missing_elements.should include(:summary)
+        @comparison.missing_elements.should include(:summary)
       end
     end
 
     describe 'with different elements' do
       before(:each) do
-        @entry_with_different_elements = @entry.tap do |e|
+        @entry_with_different_elements = @entry.clone.tap do |e|
           e.title = 'foo' 
           e.content = 'bar'
         end
@@ -106,11 +108,13 @@ describe ComparableAtomEntry do
       end
 
       it 'should report title as different' do
-        @comparison.different_elements.should include(:title)
+        @comparison.different_elements.should include([:title,
+          @entry.title, @entry_with_different_elements.title])
       end
       
       it 'should report content as different' do
-        @comparison.different_elements.should include(:content)
+        @comparison.different_elements.should include([:content,
+          @entry.content, @entry_with_different_elements.content])
       end
 
       it 'should not be the same' do
@@ -124,8 +128,13 @@ describe ComparableAtomEntry do
 
     describe 'with different elements[@type]' do
       before(:each) do
-        @entry_with_different_element_types = @entry.tap { |e| e.title['type'] = 'html' }
-
+        @entry_with_different_element_types = Atom::Entry.new.tap do |e|
+          e.title = 'Keep Ya Head Up'
+          e.summary = 'nice song'
+          e.content = 'for sure!'
+        end
+      
+        @entry_with_different_element_types.title['type'] = 'html'
         @comparison = ComparableAtomEntry.compare(@entry, @entry_with_different_element_types)
       end
 
@@ -138,7 +147,7 @@ describe ComparableAtomEntry do
       end
 
       it 'should report title has having a different type' do
-        @comparison.different_element_types.should include(:title)
+        @comparison.different_element_types.should include([:title, 'text', 'html'])
       end
 
       it 'should not be the same' do
@@ -150,7 +159,7 @@ describe ComparableAtomEntry do
       end
 
       it 'should not have different elements' do
-        @comparing.different_elements.should be_empty
+        @comparison.different_elements.should be_empty
       end
     end 
   end
