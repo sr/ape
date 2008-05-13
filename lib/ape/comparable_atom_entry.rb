@@ -13,28 +13,25 @@ class ComparableAtomEntry
 
   def compare_with(compared_entry)
     compared = get_entry_from(compared_entry)
-    result = ComparableAtomEntryResult.new(@reference, compared_entry)
+    comparison = ComparableAtomEntryResult.new
 
-    COMPARABLE_ELEMENTS.map(&:to_sym).each do |element|
-      result.missing_elements << element if @reference.respond_to?(element) && !compared.respond_to?(element)
-      next if result.missing_elements.include?(element)
+    COMPARABLE_ELEMENTS.map{|e| e.to_sym}.each do |element|
+      comparison.missing_elements << element if has_element?(@reference, element) && !has_element?(compared, element)
 
-      unless compared.send(element) == reference.send(element)
-        result.differing_elements << [element, reference.send(element), compared.send(element)] 
+      next if comparison.missing_elements.include?(element)
+
+      unless compared.send(element).to_s == @reference.send(element).to_s
+        comparison.different_elements << [element, @reference.send(element), compared.send(element)] 
       end
+
       unless @reference.send(element)['type'] == compared.send(element)['type']
-        result.differing_elements_type << [reference.send(element)['type'], compared.send(element)['type']]
+        comparison.different_element_types << [element, @reference.send(element)['type'],
+          compared.send(element)['type']]
       end
     end
 
-    result
+    comparison
   end
-
-  def same_as?(compared_entry)
-    compare_with(compared_entry).same?
-  end
-
-#  alias :same_as? :==
 
   def different_from?(compared_entry)
     !same_as?(compared_entry)
@@ -42,47 +39,30 @@ class ComparableAtomEntry
 
   private
     def get_entry_from(entry)
-      return
-        if entry.is_a?(Atom::Entry)
-          entry
-        else
-          Atom::Entry.parse(entry)
-        end
+      entry.is_a?(Atom::Entry) ? entry : Atom::Entry.parse(entry)
     rescue Atom::ParseError
       raise ArgumentError
+    end
+
+    def has_element?(entry, element)
+      entry.respond_to?(element) && entry.send(element)
     end
 end
 
 class ComparableAtomEntryResult
-  attr_accessor :missing_elements, :differing_elements, :differing_element_types
+  attr_accessor :missing_elements, :different_elements, :different_element_types
 
   def initialize
     @missing_elements   = []
-    @differing_elements = []
-    @differing_element_types = []
-  end
-
-  def differences 
-    differences = []
-
-    @missing_elements.each { |element| differences << "#{element} is missing" }
-
-    @differing_elements.each do |element, reference_element, compared_element|
-      differences << "#{element} is #{compared_element} but should be #{reference_element}"
-    end
-
-    @differing_type.each do |element, reference_element_type, compared_element_type|
-      differences << "#{element} has type #{compared_element_type} but should be #{reference_element_type}"
-    end
-
-    differences
+    @different_elements = []
+    @different_element_types = []
   end
 
   def same?
-    missing_elements.empty? && differing_elements.empty? && differing_types
+    missing_elements.empty? && different_elements.empty? && different_element_types.empty?
   end
 
   def different?
-    !same
+    !same?
   end
 end
