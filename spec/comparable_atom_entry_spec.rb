@@ -189,6 +189,10 @@ describe ComparableAtomEntry do
         @comparison.should be_different
       end
 
+      it 'should not be the same' do
+        @comparison.should_not be_same
+      end
+
       it 'should have missing elements' do
         @comparison.missing_elements.should have(1).missing_elements
       end
