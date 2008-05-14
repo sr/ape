@@ -109,12 +109,12 @@ describe ComparableAtomEntry do
 
       it 'should report title as different' do
         @comparison.different_elements.should include([:title,
-          @entry.title, @entry_with_different_elements.title])
+          @entry.title.to_s, @entry_with_different_elements.title.to_s])
       end
       
       it 'should report content as different' do
         @comparison.different_elements.should include([:content,
-          @entry.content, @entry_with_different_elements.content])
+          @entry.content.to_s, @entry_with_different_elements.content.to_s])
       end
 
       it 'should not be the same' do
@@ -146,7 +146,7 @@ describe ComparableAtomEntry do
         @comparison.should have(1).different_element_types
       end
 
-      it 'should report title has having a different type' do
+      it 'should report title as having a different type' do
         @comparison.different_element_types.should include([:title, 'text', 'html'])
       end
 
@@ -162,6 +162,65 @@ describe ComparableAtomEntry do
         @comparison.different_elements.should be_empty
       end
     end 
+
+    describe 'with missing, different and different @type elements' do
+      before(:each) do
+        @entry = Atom::Entry.new.tap do |e|
+          e.title = '<strong>foo</strong>'
+          e.summary = 'bar'
+          e.content = '<p>spam</p>'
+          end.tap do |e|
+            e.title['type'] = 'html'
+            e.content['type'] = 'xhtml'
+        end
+
+        @different_entry = Atom::Entry.new.tap do |e|
+          e.title = 'foo'
+          e.content = '<strong>yumyum</strong>'
+          end.tap do |e|
+            e.title['type'] = 'text'
+            e.content['type'] = 'html'
+        end
+
+        @comparison = ComparableAtomEntry.compare(@entry, @different_entry)
+      end
+
+      it 'should be different' do
+        @comparison.should be_different
+      end
+
+      it 'should have missing elements' do
+        @comparison.missing_elements.should have(1).missing_elements
+      end
+
+      it 'should have different elements' do
+        @comparison.should have(2).different_elements
+      end
+
+      it 'should have different element types' do
+        @comparison.should have(2).different_element_types
+      end
+
+      it 'should report summary as missing' do
+        @comparison.missing_elements.should include(:summary)
+      end
+
+      it 'should report different title' do
+        @comparison.different_elements.should include([:title, '<strong>foo</strong>', 'foo'])
+      end
+
+      it 'should report different content' do
+        @comparison.different_elements.should include([:content, '<p>spam</p>', '<strong>yumyum</strong>'])
+      end
+
+      it 'should report title as having a different type' do
+        @comparison.different_element_types.should include([:title, 'html', 'text'])
+      end
+
+      it 'should report content as having a different type' do
+        @comparison.different_element_types.should include([:content, 'xhtml', 'html'])
+      end
+    end
   end
 end
 

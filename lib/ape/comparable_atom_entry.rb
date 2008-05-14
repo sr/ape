@@ -21,7 +21,7 @@ class ComparableAtomEntry
       next if comparison.missing_elements.include?(element)
 
       unless compared.send(element).to_s == @reference.send(element).to_s
-        comparison.different_elements << [element, @reference.send(element), compared.send(element)] 
+        comparison.different_elements << [element, @reference.send(element).to_s, compared.send(element).to_s] 
       end
 
       unless @reference.send(element)['type'] == compared.send(element)['type']
