@@ -10,7 +10,7 @@ Entry posting
   - DONE: Response body contains a valid Atom entry
 - When the entry has ben successfuly POSTed:
   - DONE: Returned entries (in content-type) is the same as the one we posted
-  - Categories are still in the entry
+  - DONE: Categories are still in the entry
   - Check that foreign markup survived (dc:subject)
 - When testing returned Location, it checks that:
   - DONE: The header exists
