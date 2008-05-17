@@ -13,11 +13,9 @@ module Ape
       entry.updated = locals[:updated] || Time.now
       entry.summary = 'Summary from the APE'
       entry.content = %q{
-        <div xmlns='http://www.w3.org/1999/xhtml'>
-          <p>A test post from the &lt;APE&gt</p>
-          <p>If you see this in an entry, it's probably a left-over from an
-            unsuccessful Ape run; feel free to delete it.</p>
-        </div>
+        <p>A test post from the &lt;APE&gt</p>
+        <p>If you see this in an entry, it's probably a left-over from an
+        unsuccessful Ape run; feel free to delete it.</p>
       }
       entry.content['type'] = locals[:content_type] || 'xhtml'
       entry
