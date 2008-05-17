@@ -3,10 +3,12 @@ require File.dirname(__FILE__) + '/../lib/ape/comparable_atom_entry'
 
 describe ComparableAtomEntry do
   before(:each) do
+
     @entry = Atom::Entry.new.tap do |e|
       e.title = 'Keep Ya Head Up'
       e.summary = 'nice song'
       e.content = 'for sure!'
+      e.categories << Atom::Category.new(:term => 'music') << Atom::Category.new(:term => 'LA')
     end
   end
 
@@ -36,7 +38,7 @@ describe ComparableAtomEntry do
     end
   end
 
-  describe 'When comparing two similar entries' do
+  describe 'When comparing two similar entries', :shared => true do
     before(:each) do
       @comparison = ComparableAtomEntry.compare(@entry, @entry)
     end
@@ -61,6 +63,11 @@ describe ComparableAtomEntry do
       @comparison.different_element_types.should be_empty
     end
 
+    it 'should not have missing categories' do
+      @comparison.missing_categories.should be_empty
+    end
+
+
     it 'should have no differences' do
       @comparison.differences.should be_empty
     end
@@ -71,6 +78,7 @@ describe ComparableAtomEntry do
       before(:each) do
         @entry_with_missing_elements = Atom::Entry.new.tap do |e|
           e.title = 'Keep Ya Head Up'
+          e.categories << Atom::Category.new(:term => 'music') << Atom::Category.new(:term => 'LA')
         end
         @comparison = ComparableAtomEntry.compare(@entry, @entry_with_missing_elements)
       end
@@ -81,6 +89,10 @@ describe ComparableAtomEntry do
 
       it 'should not be the same' do
         @comparison.should_not be_same
+      end
+
+      it 'should not have missing categories' do
+        @comparison.missing_categories.should be_empty
       end
 
       it 'should have missing elements' do
@@ -107,9 +119,11 @@ describe ComparableAtomEntry do
 
     describe 'with different elements' do
       before(:each) do
-        @entry_with_different_elements = @entry.clone.tap do |e|
-          e.title = 'foo' 
+        @entry_with_different_elements = Atom::Entry.new.tap do |e|
+          e.title = 'foo'
+          e.summary = 'nice song'
           e.content = 'bar'
+          e.categories << Atom::Category.new(:term => 'music') << Atom::Category.new(:term => 'LA')
         end
 
         @comparison = ComparableAtomEntry.compare(@entry, @entry_with_different_elements)
@@ -149,14 +163,20 @@ describe ComparableAtomEntry do
       it 'should not be missing element' do
         @comparison.missing_elements.should be_empty
       end
+
+      it 'should not have missing categories' do
+        @comparison.missing_categories.should be_empty
+      end
     end
 
     describe 'with different elements[@type]' do
       before(:each) do
+
         @entry_with_different_element_types = Atom::Entry.new.tap do |e|
           e.title = 'Keep Ya Head Up'
           e.summary = 'nice song'
           e.content = 'for sure!'
+          e.categories << Atom::Category.new(:term => 'music') << Atom::Category.new(:term => 'LA')
         end
       
         @entry_with_different_element_types.title['type'] = 'html'
@@ -194,7 +214,51 @@ describe ComparableAtomEntry do
       it 'should not have different elements' do
         @comparison.different_elements.should be_empty
       end
+
+      it 'should not have missing categories' do
+        @comparison.missing_categories.should be_empty
+      end
     end 
+
+    describe 'with missing categories' do
+      before(:each) do
+        @entry_with_missing_category = Atom::Entry.new.tap do |e|
+          e.title = 'Keep Ya Head Up'
+          e.summary = 'nice song'
+          e.content = 'for sure!'
+          e.categories << Atom::Category.new(:term => 'music')
+        end
+        @comparison = ComparableAtomEntry.compare(@entry, @entry_with_missing_category)
+      end
+
+      it 'should be different' do
+        @comparison.should be_different
+      end
+
+      it 'should have missing categories' do
+        @comparison.should have(1).missing_categories
+      end
+
+      it 'should report difference in English' do
+        @comparison.difference.should include("Category <category term='LA' xmlns='http://www.w3.org/2005/Atom'/> is missing.")
+      end
+
+      it 'should not be the same' do
+        @comparison.should_not be_same
+      end
+
+      it 'should not have missing elements' do
+        @comparison.missing_elements.should be_empty
+      end
+
+      it 'should not have different elements' do
+        @comparison.different_elements.should be_empty
+      end
+
+      it 'should not have different element types' do
+        @comparison.different_element_types.should be_empty
+      end
+    end
 
     describe 'with missing, different and different @type elements' do
       before(:each) do
