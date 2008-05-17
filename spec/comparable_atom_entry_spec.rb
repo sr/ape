@@ -3,7 +3,6 @@ require File.dirname(__FILE__) + '/../lib/ape/comparable_atom_entry'
 
 describe ComparableAtomEntry do
   before(:each) do
-
     @entry = Atom::Entry.new.tap do |e|
       e.title = 'Keep Ya Head Up'
       e.summary = 'nice song'
@@ -38,24 +37,32 @@ describe ComparableAtomEntry do
   end
 
   describe 'When comparing two similar entries' do
+    before(:each) do
+      @comparison = ComparableAtomEntry.compare(@entry, @entry)
+    end
+
     it 'should be the same' do
-      ComparableAtomEntry.compare(@entry, @entry).should be_same
+      @comparison.should be_same
     end
 
     it 'should not be different' do
-      ComparableAtomEntry.compare(@entry, @entry).should_not be_different
+      @comparison.should_not be_different
     end
 
     it 'should not have missing elements' do
-      ComparableAtomEntry.compare(@entry, @entry).missing_elements.should be_empty
+      @comparison.missing_elements.should be_empty
     end
 
     it 'should not have different elements' do
-      ComparableAtomEntry.compare(@entry, @entry).different_elements.should be_empty
+      @comparison.different_elements.should be_empty
     end
 
     it 'should not have different element types' do
-      ComparableAtomEntry.compare(@entry, @entry).different_element_types.should be_empty
+      @comparison.different_element_types.should be_empty
+    end
+
+    it 'should have no differences' do
+      @comparison.differences.should be_empty
     end
   end
 
@@ -87,6 +94,15 @@ describe ComparableAtomEntry do
       it 'should be missing summary' do
         @comparison.missing_elements.should include(:summary)
       end
+
+      it 'should have differences' do
+        @comparison.should have(2).differences
+      end
+
+      it 'should report differences in English' do
+        @comparison.differences.should include('content element is missing.')
+        @comparison.differences.should include('summary element is missing.')
+      end
     end
 
     describe 'with different elements' do
@@ -115,6 +131,15 @@ describe ComparableAtomEntry do
       it 'should report content as different' do
         @comparison.different_elements.should include([:content,
           @entry.content.to_s, @entry_with_different_elements.content.to_s])
+      end
+
+      it 'should have differences' do
+        @comparison.should have(2).differences
+      end
+
+      it 'should report differences in English' do
+        @comparison.differences.should include('title element is "foo" but it should be "Keep Ya Head Up".')
+        @comparison.differences.should include('content element is "bar" but it should be "for sure!".')
       end
 
       it 'should not be the same' do
@@ -148,6 +173,14 @@ describe ComparableAtomEntry do
 
       it 'should report title as having a different type' do
         @comparison.different_element_types.should include([:title, 'text', 'html'])
+      end
+
+      it 'should have difference' do
+        @comparison.should have(1).difference
+      end
+
+      it 'should report difference in English' do
+        @comparison.difference.should include('title element has type "html" but it should be "text".')
       end
 
       it 'should not be the same' do
@@ -223,6 +256,19 @@ describe ComparableAtomEntry do
 
       it 'should report content as having a different type' do
         @comparison.different_element_types.should include([:content, 'xhtml', 'html'])
+      end
+
+      it 'should have differences' do
+        @comparison.should have(5).differences
+      end
+
+      it 'should report differences in English' do
+        @comparison.differences.should include('summary element is missing.')
+        @comparison.differences.should include('title element is "foo" but it should be "<strong>foo</strong>".')
+
+        @comparison.differences.should include('content element is "<strong>yumyum</strong>" but it should be "<p>spam</p>".')
+        @comparison.differences.should include('title element has type "text" but it should be "html".')
+        @comparison.differences.should include('content element has type "html" but it should be "xhtml".')
       end
     end
   end

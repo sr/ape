@@ -15,8 +15,8 @@ class ComparableAtomEntry
     compared = get_entry_from(compared_entry)
     comparison = ComparableAtomEntryResult.new
 
-    COMPARABLE_ELEMENTS.map{|e| e.to_sym}.each do |element|
-      comparison.missing_elements << element if has_element?(@reference, element) && !has_element?(compared, element)
+    COMPARABLE_ELEMENTS.map{|e| e.to_sym}.select{|e| @reference.respond_to?(e)}.each do |element|
+      comparison.missing_elements << element unless has_element?(compared, element)
 
       next if comparison.missing_elements.include?(element)
 
@@ -65,4 +65,19 @@ class ComparableAtomEntryResult
   def different?
     !same?
   end
+
+  def differences
+    differences = []
+    @missing_elements.each { |element| differences << "#{element} element is missing."}
+    @different_elements.each do |element, reference_element, compared_element|
+      differences << %Q{#{element} element is "#{compared_element}" but it should be "#{reference_element}".}
+    end
+    @different_element_types.each do |element, reference_type, compared_type|
+      differences << %Q{#{element} element has type "#{compared_type}" but it should be "#{reference_type}".}
+    end
+
+    differences
+  end
+
+  alias :difference :differences
 end
