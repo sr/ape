@@ -30,6 +30,7 @@ class ComparableAtomEntry
       end
     end
 
+    # TODO: be more precise (analyse scheme and label)
     @reference.categories.each do |category|
       comparison.missing_categories << category unless has_category?(compared, category)
     end
