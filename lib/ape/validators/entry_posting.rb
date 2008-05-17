@@ -44,6 +44,7 @@ module Ape
           comparison.differences.each { |difference| error(difference) }
         else
           correct 'Returned entry is consistent with posted entry.'
+          correct 'Provided categories included in returned entry.'
         end
 
       end

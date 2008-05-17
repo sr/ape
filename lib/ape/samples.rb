@@ -18,6 +18,8 @@ module Ape
         unsuccessful Ape run; feel free to delete it.</p>
       }
       entry.content['type'] = locals[:content_type] || 'xhtml'
+      entry.categories << Atom::Category.new(:term => 'simians',
+        :scheme => 'http://tbray.org/cat-test')
       entry
     end
   end

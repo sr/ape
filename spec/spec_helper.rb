@@ -60,6 +60,12 @@ module EntryPostingValidatorHelpers
           }
         end.tap { |e| e.content['type'] = 'html' }.to_s
       end
+    when :missing_category
+      successful_response.tap do |response|
+        response.last[0] = Atom::Entry.parse(response.last[0]).tap do |e|
+          e.categories.delete_if { true }
+        end.to_s
+      end
     else
       raise ArgumentError
     end 

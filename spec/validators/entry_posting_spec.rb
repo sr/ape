@@ -120,6 +120,15 @@ describe 'When testing entry POSTing' do
       end
     end
 
-    it "should report an error if at last one of the category have not survived"
+    it 'should report a correct behavior if the privided category is in response' do
+      should_report(:correct, 'Provided categories included in returned entry.')
+      do_validate
+    end
+
+    it 'should report an error if one of the priveded category is missing' do
+      with_response(:missing_category) do
+        should_report(:error, "Category <category term='simians' scheme='http://tbray.org/cat-test' xmlns='http://www.w3.org/2005/Atom'/> is missing.")
+      end
+    end
   end
 end
