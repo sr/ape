@@ -1,4 +1,5 @@
 require 'net/http'
+require File.dirname(__FILE__) + '/../core_ext'
 
 module Ape
   module Validator

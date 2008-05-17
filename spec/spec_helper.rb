@@ -6,20 +6,13 @@ $:.unshift 'lib/', File.dirname(__FILE__) + '/../lib'
 require 'ape/samples'
 require 'ape/validators/entry_posting'
 
-require File.dirname(__FILE__) + '/custom_matchers'
-include CustomApeMatchers
-
 # Ninja-patch Rack::MockResponse so it looks like an Net::HTTPResponse
 class Rack::MockResponse
   alias :code :status
 end
 
-# http://blog.moertel.com/articles/2007/02/07/ruby-1-9-gets-handy-new-method-object-tap
-class Object
-  def tap
-    yield(self)
-    self
-  end
+def should_report(type, message)
+  @validator.reporter.should_receive(:call).with(@validator, type, message)
 end
 
 module EntryPostingValidatorHelpers
