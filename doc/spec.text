@@ -7,9 +7,9 @@ Entry posting
 - The POST request is successful
   - DONE: Response code == 201
   - DONE: Content-type is correct
-  - Response body contains a valid Atom entry
+  - DONE: Response body contains a valid Atom entry
 - When the entry has ben successfuly POSTed:
-  - Returned entries (in content-type) is the same as the one we posted
+  - DONE: Returned entries (in content-type) is the same as the one we posted
   - Categories are still in the entry
   - Check that foreign markup survived (dc:subject)
 - When testing returned Location, it checks that:
