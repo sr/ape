@@ -56,6 +56,17 @@ module EntryPostingValidatorHelpers
       successful_response.tap do |response|
         response.last[0] = '<fooo><bar>'
       end
+    when :divergent_returned_entry
+      successful_response.tap do |response|
+        response.last[0] = Atom::Entry.new.tap do |entry|
+          entry.summary = 'blah'
+          entry.content = %q{
+            <p>A test post from the &lt;APE&gt</p>
+            <p>If you see this in an entry, it's probably a left-over from an
+            unsuccessful Ape run; feel free to delete it.</p>
+          }
+        end.tap { |e| e.content['type'] = 'html' }.to_s
+      end
     else
       raise ArgumentError
     end 

@@ -36,6 +36,15 @@ module Ape
           error 'New entry is not well-formed'
           return false
         end
+
+        comparison = ComparableAtomEntry.compare(Ape::Samples.basic_entry, @response.body)
+        if comparison.different?
+          error 'Returned entry is inconsistent with posted entry.'
+          comparison.differences.each { |difference| error(difference) }
+        else
+          correct 'Returned entry is consistent with posted entry.'
+        end
+
       end
 
       private
@@ -59,6 +68,10 @@ module Ape
 
         def notify(message)
           reporter.call(self, :notice, message)
+        end
+
+        def correct(message)
+          reporter.call(self, :correct, message)
         end
 
         def error(message)

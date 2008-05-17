@@ -92,8 +92,6 @@ describe 'When testing entry POSTing' do
         should_report(:error, 'Incorrect Content-Type.')
       end
     end
-
-    it "should report an error if the returned entry isn't valid"
   end
 
   describe 'When examining the returned entry (as returned in the POST response)' do
@@ -102,13 +100,26 @@ describe 'When testing entry POSTing' do
       do_validate
     end
 
-    it "should report an error and end the validation if the returned entry isn't valid" do
+    it "should report an error and end the validation process if the returned entry isn't valid" do
       with_response(:not_well_formed_entry) do
         should_report(:error, 'New entry is not well-formed')
       end.should be_false
     end
 
-    it "should report an error if the returned entry isn't the same as the one we posted"
+    it 'should report a correct behavior if the entry is the same' do
+      should_report(:correct, 'Returned entry is consistent with posted entry.')
+      do_validate
+    end
+
+    it "should report an error if the returned entry isn't the same as the one we posted" do
+      with_response(:divergent_returned_entry) do
+        should_report(:error, 'Returned entry is inconsistent with posted entry.')
+        should_report(:error, 'title element is missing.')
+        should_report(:error, 'content element has type "html" but it should be "xhtml".')
+        should_report(:error, /summary element is ".*" but it should be ".*"./)
+      end
+    end
+
     it "should report an error if at last one of the category have not survived"
   end
 end
