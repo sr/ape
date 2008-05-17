@@ -33,10 +33,6 @@ class ComparableAtomEntry
     comparison
   end
 
-  def different_from?(compared_entry)
-    !same_as?(compared_entry)
-  end
-
   private
     def get_entry_from(entry)
       entry.is_a?(Atom::Entry) ? entry : Atom::Entry.parse(entry)
