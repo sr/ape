@@ -120,12 +120,12 @@ describe 'When testing entry POSTing' do
       end
     end
 
-    it 'should report a correct behavior if the privided category is in response' do
+    it 'should report a correct behavior if the provided category is in response' do
       should_report(:correct, 'Provided categories included in returned entry.')
       do_validate
     end
 
-    it 'should report an error if one of the priveded category is missing' do
+    it 'should report an error if one of the provided category is missing' do
       with_response(:missing_category) do
         should_report(:error, "Category <category term='simians' scheme='http://tbray.org/cat-test' xmlns='http://www.w3.org/2005/Atom'/> is missing.")
       end
@@ -134,5 +134,22 @@ describe 'When testing entry POSTing' do
     it 'should report a correct behavior if the foreign markup has been preserved'
     it 'should report an error if the foreign markup has been altered'
     it 'should report an error if the foreign markup has been discarded'
+  end
+
+  describe 'When examining the new entry as retrieved using Location header in POST response' do
+    it 'should notify we are examining the new entry'
+    it "should report an error if the URI isn't accessible"
+    it 'should report a correct behavior if the entry is server with the right Content-Type'
+    it "should report an error if the new entry isn't served with the correct Content-Type"
+    it "should report an error and end the validation process if the entry isn't valid"
+    it 'should report a correct behavior if the entry is the same'
+    it "should report an error if the returned entry isn't the same as the one we posted"
+    it 'should report a correct behavior if the provoded category is included in the new entry'
+    it 'should report an error if one of the provided category is missing'
+    it 'should report a correct behavior if the foreign markup has been preserved'
+    it 'should report an error if the foreign markup has been altered'
+    it 'should report an error if the foreign markup has been discarded'
+    it 'should report an error unless the slug we provided was used'
+    it 'should report a correct behavior if the slug we provided was used'
   end
 end

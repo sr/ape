@@ -14,13 +14,13 @@ Entry posting
   - PENDING: Check that foreign markup survived (dc:subject)
 - When testing returned Location, it checks that:
   - DONE: The header exists
-  - The URI is accessible
-  - correct Media-type
+  - PENDING: The URI is accessible
+  - PENDING: correct Media-type
 - When testing entries as returned in Location header, it checks that:
-  - Entry is well formed
-  - The slug we provided was used
-  - Categories are still in the entry
-  - Foreign markup is preserved (dc:subject)
+  - PENDING: Entry is well formed
+  - PENDING: The slug we provided was used
+  - PENDING: Categories are still in the entry
+  - PENDING: Foreign markup is preserved (dc:subject)
 - When testing feed, it checks that:
   - The new entry show-up into it
   - Entry has an link[@rel='edit'] link

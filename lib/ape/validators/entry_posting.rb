@@ -46,7 +46,6 @@ module Ape
           correct 'Returned entry is consistent with posted entry.'
           correct 'Provided categories included in returned entry.'
         end
-
       end
 
       private
