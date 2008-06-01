@@ -130,5 +130,9 @@ describe 'When testing entry POSTing' do
         should_report(:error, "Category <category term='simians' scheme='http://tbray.org/cat-test' xmlns='http://www.w3.org/2005/Atom'/> is missing.")
       end
     end
+
+    it 'should report a correct behavior if the foreign markup has been preserved'
+    it 'should report an error if the foreign markup has been altered'
+    it 'should report an error if the foreign markup has been discarded'
   end
 end
